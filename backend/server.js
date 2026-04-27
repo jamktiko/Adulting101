@@ -58,6 +58,19 @@ app.get('/api/budgets', async (req, res) => {
   }
 });
 
+// 1. Varmista ensin, että olet tuonut mallin tiedoston yläosassa:
+// const Entertainment = require('./models/Entertainment');
+
+// 2. Lisää itse reitti:
+app.get('/api/entertainment', async (req, res) => {
+  try {
+      const items = await Entertainment.find();
+      res.json(items);
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/entertainment/:userId', async (req, res) => {
   try {
       const items = await Entertainment.find({ user_id: req.params.userId });
