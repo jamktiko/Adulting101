@@ -13,6 +13,7 @@ require('dotenv').config();
 
 // Tuodaan malli (varmista, että olet luonut models/User.js tiedoston)
 const User = require('./models/User');
+const Budget = require('./models/Budget');
 
 const app = express();
 
@@ -43,6 +44,27 @@ app.get('/api/users', async (req, res) => {
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// HAE KAIKKI BUDJETTIMERKINNÄT (Testaamiseen)
+app.get('/api/budgets', async (req, res) => {
+  try {
+      const budgets = await Budget.find();
+      res.json(budgets);
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+});
+
+// HAE TIETYN KÄYTTÄJÄN BUDJETTI (Tätä Angular-sovelluksesi tulee käyttämään)
+// Esim: localhost:3000/api/budgets/testi-user-123
+app.get('/api/budgets/:userId', async (req, res) => {
+  try {
+      const userBudgets = await Budget.find({ user_id: req.params.userId });
+      res.json(userBudgets);
+  } catch (err) {
+      res.status(500).json({ error: err.message });
   }
 });
 
