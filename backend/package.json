@@ -1,0 +1,31 @@
+{
+  "name": "adulting101-esituotanto",
+  "version": "1.0.0",
+  "description": "--START This is a example template, which you can use. Version 1.0. --END # Project Title",
+  "main": "server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamktiko/Adulting101-esituotanto.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jamktiko/Adulting101-esituotanto/issues"
+  },
+  "homepage": "https://github.com/jamktiko/Adulting101-esituotanto#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.5.0"
+  }
+}
