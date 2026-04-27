@@ -14,6 +14,7 @@ require('dotenv').config();
 // Tuodaan malli (varmista, että olet luonut models/User.js tiedoston)
 const User = require('./models/User');
 const Budget = require('./models/Budget');
+const Entertainment = require('./models/Entertainment');
 
 const app = express();
 
@@ -52,6 +53,15 @@ app.get('/api/budgets', async (req, res) => {
   try {
       const budgets = await Budget.find();
       res.json(budgets);
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/entertainment/:userId', async (req, res) => {
+  try {
+      const items = await Entertainment.find({ user_id: req.params.userId });
+      res.json(items);
   } catch (err) {
       res.status(500).json({ error: err.message });
   }
