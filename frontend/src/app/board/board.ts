@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { PostItNote } from '../post-it-note/post-it-note';
 
 @Component({
@@ -9,4 +10,10 @@ import { PostItNote } from '../post-it-note/post-it-note';
 })
 export class Board {
   title = 'Adulting 101';
+
+  private router = inject(Router);
+
+  navigateToSettings() {
+    this.router.navigate(['/settings']);
+  }
 }
