@@ -48,16 +48,6 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// HAE KAIKKI BUDJETTIMERKINNÄT (Testaamiseen)
-app.post('/api/budgets', async (req, res) => {
-  try {
-      const budgets = await Budget.find();
-      res.json(budgets);
-  } catch (err) {
-      res.status(500).json({ error: err.message });
-  }
-});
-
 // 1. Varmista ensin, että olet tuonut mallin tiedoston yläosassa:
 // const Entertainment = require('./models/Entertainment');
 
@@ -82,12 +72,26 @@ app.get('/api/entertainment/:userId', async (req, res) => {
 
 // HAE TIETYN KÄYTTÄJÄN BUDJETTI (Tätä Angular-sovelluksesi tulee käyttämään)
 // Esim: localhost:3000/api/budgets/testi-user-123
-app.get('/api/budgets/:userId', async (req, res) => {
+// 1. TALLENNUS (POST) - Laita tämä ensin!
+app.post('/api/budgets', async (req, res) => {
   try {
-      const userBudgets = await Budget.find({ user_id: req.params.userId });
-      res.json(userBudgets);
+    const newEntry = new Budget(req.body);
+    const savedEntry = await newEntry.save();
+    console.log("Onnistui! Tallennettu:", savedEntry);
+    res.status(201).json(savedEntry); // Tämän PITÄÄ palauttaa 201
   } catch (err) {
-      res.status(500).json({ error: err.message });
+    console.error("Tallennus epäonnistui:", err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 2. HAKU (GET) - Kaikki budjetit
+app.get('/api/budgets', async (req, res) => {
+  try {
+    const budgets = await Budget.find();
+    res.json(budgets); // Tämä palauttaa 200 OK
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
