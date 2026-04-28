@@ -12,7 +12,7 @@ jobs:
     defaults:
       run:
         # Sets the working directory for the run steps to your Angular app
-        working-directory: frontend/testi-frontend
+        working-directory: ./frontend
 
     steps:
       - name: Checkout
@@ -38,7 +38,7 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync dist/testi-frontend/browser s3://${{ secrets.AWS_S3_BUCKET }} --delete
+          aws s3 sync dist/frontend/browser s3://${{ secrets.AWS_S3_BUCKET }} --delete
 
       - name: Invalidate CloudFront cache
         run: |
