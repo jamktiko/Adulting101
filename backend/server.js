@@ -1,17 +1,13 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
-
-console.log(
-  'TARKISTUS: MONGODB_URI on:',
-  process.env.MONGODB_URI ? 'Löytyi!' : 'TYHJÄ (undefined)',
-);
-
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors'); // Hyvä lisätä tässä vaiheessa Angularia varten
-require('dotenv').config();
+const cors = require('cors');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-// Tuodaan malli (varmista, että olet luonut models/User.js tiedoston)
+// --- TARKISTUKSET ---
+console.log('TARKISTUS: MONGODB_URI on:', process.env.MONGODB_URI ? 'Löytyi!' : 'TYHJÄ (undefined)');
+
+// --- MALLIEN TUONTI ---
 const User = require('./models/User');
 const Budget = require('./models/Budget');
 const Entertainment = require('./models/Entertainment');
@@ -19,8 +15,8 @@ const Entertainment = require('./models/Entertainment');
 const app = express();
 
 // --- MIDDLEWARE ---
-app.use(cors()); // Sallii Angular-sovelluksen ottaa yhteyden tähän backendiin
-app.use(express.json()); // Sallii JSON-datan lukemisen pyynnöistä
+app.use(cors());
+app.use(express.json());
 
 // --- TIETOKANTAYHTEYS ---
 const uri = process.env.MONGODB_URI;
@@ -31,14 +27,13 @@ mongoose
 
 // --- REITIT (ROUTES) ---
 
-// Perusreitti testaamiseen selaimella (localhost:3000)
 app.get('/', (req, res) => {
-  res.send(
-    'Paljon onnea kaikille syntymäpäiväsankareille ja hyvää vappua jutille! 🎉🎂🍾',
-  );
+  res.send('Paljon onnea kaikille syntymäpäiväsankareille ja hyvää vappua jutille! 🎉');
 });
 
-// REITTI 1: Hae kaikki käyttäjät (localhost:3000/api/users)
+// --- 1. KÄYTTÄJÄT JA CHECKLISTIT ---
+
+// Hae kaikki käyttäjät
 app.get('/api/users', async (req, res) => {
   try {
     const users = await User.find();
@@ -48,61 +43,86 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// 1. Varmista ensin, että olet tuonut mallin tiedoston yläosassa:
-// const Entertainment = require('./models/Entertainment');
-
-// 2. Lisää itse reitti:
-app.get('/api/entertainment', async (req, res) => {
+// Päivitä checklist-kohta (esim. siivous- tai muuttolista)
+// Tämä reitti on dynaaminen: se etsii käyttäjän ja päivittää tietyn kohdan tilan
+app.patch('/api/users/:userId/checklist', async (req, res) => {
   try {
-      const items = await Entertainment.find();
-      res.json(items);
-  } catch (err) {
-      res.status(500).json({ error: err.message });
-  }
-});
+    const { userId } = req.params;
+    const { listName, itemIndex, statusValue } = req.body; 
+    // listName: 'move_checklist' tai 'cleaning_checklist'
+    // statusValue: true/false (done tai purchased)
 
-app.get('/api/entertainment/:userId', async (req, res) => {
-  try {
-      const items = await Entertainment.find({ user_id: req.params.userId });
-      res.json(items);
-  } catch (err) {
-      res.status(500).json({ error: err.message });
-  }
-});
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'Käyttäjää ei löydy' });
 
-// HAE TIETYN KÄYTTÄJÄN BUDJETTI (Tätä Angular-sovelluksesi tulee käyttämään)
-// Esim: localhost:3000/api/budgets/testi-user-123
-// 1. TALLENNUS (POST) - Laita tämä ensin!
-app.post('/api/budgets', async (req, res) => {
-  try {
-    const newEntry = new Budget(req.body);
-    const savedEntry = await newEntry.save();
-    console.log("Onnistui! Tallennettu:", savedEntry);
-    res.status(201).json(savedEntry); // Tämän PITÄÄ palauttaa 201
-  } catch (err) {
-    console.error("Tallennus epäonnistui:", err.message);
-    res.status(400).json({ error: err.message });
-  }
-});
+    // Määritetään kenttä, esim: "cleaning_checklist.0.done"
+    const statusKey = listName === 'cleaning_checklist' ? 'done' : 'purchased';
+    const updatePath = `${listName}.${itemIndex}.${statusKey}`;
 
-// 2. HAKU (GET) - Kaikki budjetit
-app.get('/api/budgets', async (req, res) => {
-  try {
-    const budgets = await Budget.find();
-    res.json(budgets); // Tämä palauttaa 200 OK
+    await User.updateOne(
+      { _id: userId },
+      { $set: { [updatePath]: statusValue } }
+    );
+
+    res.json({ message: 'Checklist päivitetty' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// REITTI 2: Lisää uusi käyttäjä (tätä testataan Postmanilla)
-app.post('/api/users', async (req, res) => {
+// --- 2. BUDJETTI (TALOUS) ---
+
+// Lisää uusi budjettimerkintä
+app.post('/api/budgets', async (req, res) => {
   try {
-    const newUser = new User(req.body);
-    const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+    const newEntry = new Budget(req.body);
+    const savedEntry = await newEntry.save();
+    res.status(201).json(savedEntry);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// Hae tietyn käyttäjän budjetti
+app.get('/api/budgets/:userId', async (req, res) => {
+  try {
+    const userBudgets = await Budget.find({ user_id: req.params.userId });
+    res.json(userBudgets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Poista budjettimerkintä
+app.delete('/api/budgets/:id', async (req, res) => {
+  try {
+    await Budget.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Merkintä poistettu' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- 3. VIIHDE (ENTERTAINMENT) ---
+
+// Lisää uusi viihdekohde
+app.post('/api/entertainment', async (req, res) => {
+  try {
+    const newItem = new Entertainment(req.body);
+    const savedItem = await newItem.save();
+    res.status(201).json(savedItem);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Hae tietyn käyttäjän viihdelista
+app.get('/api/entertainment/:userId', async (req, res) => {
+  try {
+    const items = await Entertainment.find({ user_id: req.params.userId });
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
