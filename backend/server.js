@@ -49,7 +49,7 @@ app.get('/api/users', async (req, res) => {
 });
 
 // HAE KAIKKI BUDJETTIMERKINNÄT (Testaamiseen)
-app.get('/api/budgets', async (req, res) => {
+app.post('/api/budgets', async (req, res) => {
   try {
       const budgets = await Budget.find();
       res.json(budgets);
