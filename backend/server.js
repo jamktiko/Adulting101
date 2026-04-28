@@ -93,6 +93,16 @@ app.get('/api/budgets/:userId', async (req, res) => {
   }
 });
 
+// LISÄÄ TÄMÄ: Hae kaikki budjettimerkinnät (localhost:3000/api/budgets)
+app.get('/api/budgets', async (req, res) => {
+  try {
+    const budgets = await Budget.find();
+    res.json(budgets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Poista budjettimerkintä
 app.delete('/api/budgets/:id', async (req, res) => {
   try {
@@ -120,6 +130,16 @@ app.post('/api/entertainment', async (req, res) => {
 app.get('/api/entertainment/:userId', async (req, res) => {
   try {
     const items = await Entertainment.find({ user_id: req.params.userId });
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// LISÄÄ TÄMÄ: Hae kaikki viihdekohteet (localhost:3000/api/entertainment)
+app.get('/api/entertainment', async (req, res) => {
+  try {
+    const items = await Entertainment.find();
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
