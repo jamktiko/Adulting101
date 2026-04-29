@@ -1,11 +1,15 @@
 const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+const { signUpUser, confirmUser, loginUser } = require('./utils/cognito');
 
 // --- TARKISTUKSET ---
-console.log('TARKISTUS: MONGODB_URI on:', process.env.MONGODB_URI ? 'Löytyi!' : 'TYHJÄ (undefined)');
+console.log(
+  'TARKISTUS: MONGODB_URI on:',
+  process.env.MONGODB_URI ? 'Löytyi!' : 'TYHJÄ (undefined)',
+);
 
 // --- MALLIEN TUONTI ---
 const User = require('./models/User');
@@ -28,7 +32,9 @@ mongoose
 // --- REITIT (ROUTES) ---
 
 app.get('/', (req, res) => {
-  res.send('Paljon onnea kaikille syntymäpäiväsankareille ja hyvää vappua jutille! 🎉');
+  res.send(
+    'Paljon onnea kaikille syntymäpäiväsankareille ja hyvää vappua jutille! 🎉',
+  );
 });
 
 // --- 1. KÄYTTÄJÄT JA CHECKLISTIT ---
@@ -46,7 +52,9 @@ app.get('/api/users', async (req, res) => {
 app.patch('/api/users/:userId/checklist', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { listName, itemIndex, statusValue } = req.body; 
+    const { listName, itemIndex, statusValue } = req.body;
+    // listName: 'move_checklist' tai 'cleaning_checklist'
+    // statusValue: true/false (done tai purchased)
 
     // KORJAUS: Käytetään findOne, koska _id on String
     const user = await User.findOne({ _id: userId });
@@ -58,7 +66,7 @@ app.patch('/api/users/:userId/checklist', async (req, res) => {
     // KORJAUS: Käytetään findOneAndUpdate, jotta vältetään ObjectId-muunnos
     await User.findOneAndUpdate(
       { _id: userId },
-      { $set: { [updatePath]: statusValue } }
+      { $set: { [updatePath]: statusValue } },
     );
 
     res.json({ message: 'Checklist päivitetty' });
@@ -140,6 +148,59 @@ app.get('/api/entertainment', async (req, res) => {
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+// --- 4. AUTENTIKOINTI JA REKISTERÖINTI (COGNITO) ---
+
+// REKISTERÖINTI
+app.post('/api/signup', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Luodaan käyttäjä Cognitoon
+    const cognitoResult = await signUpUser(username, email, password);
+
+    // Luodaan ja tallennetaan käyttäjä MongoDB-kantaan
+    const newUser = new User({
+      _id: cognitoResult.UserSub, // Cogniton tuottama yksilöllinen ID
+      username: username,
+      email: email,
+      password: 'COGNITO_HANDLES_THIS', // Cognito hoitaa oikean salasanan tästä edes
+      cleaning_checklist: [],
+      move_checklist: [],
+    });
+    await newUser.save();
+
+    res
+      .status(200)
+      .json({ message: 'Rekisteröityminen onnistui. Tarkista sähköposti!' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// VAHVISTUS (Sähköpostista tulleen koodin syöttö)
+app.post('/api/confirm', async (req, res) => {
+  try {
+    const { username, code } = req.body;
+    await confirmUser(username, code);
+
+    res.status(200).json({ message: 'Tili vahvistettu onnistuneesti!' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// KIRJAUTUMINEN
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const tokens = await loginUser(username, password);
+
+    // Palautetaan tokenit frontendille
+    res.status(200).json(tokens);
+  } catch (error) {
+    res.status(401).json({ error: 'Käyttäjätunnus tai salasana on väärin' });
   }
 });
 
