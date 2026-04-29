@@ -1,0 +1,12 @@
+<div #board class="board">
+  <app-ghost *ngIf="ghostPosition" [position]="ghostPosition"></app-ghost>
+
+  <app-post-it
+    *ngFor="let p of postIts"
+    [postIt]="p"
+    [active]="activeId === p.id"
+    (dragMove)="onDragMove($event, p)"
+    (dragEnd)="onDragEnd($event, p)"
+    (activate)="setActive($event)"
+  ></app-post-it>
+</div>

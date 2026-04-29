@@ -1,0 +1,16 @@
+<div
+  cdkDrag
+  class="note"
+  [cdkDragFreeDragPosition]="postIt.position"
+  (cdkDragMoved)="onMove($event)"
+  (cdkDragEnded)="onEnd($event)"
+  (mousedown)="activate.emit(postIt.id)"
+  [ngStyle]="{
+    'background-color': postIt.color,
+    'z-index': active ? 999 : 1,
+    transform: 'rotate(' + postIt.rotation + 'deg)'
+  }"
+>
+  <h3>{{ postIt.title }}</h3>
+  <p>{{ postIt.text }}</p>
+</div>
