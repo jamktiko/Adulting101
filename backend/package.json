@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/jamktiko/Adulting101-esituotanto#readme",
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1038.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
