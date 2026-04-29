@@ -18,4 +18,9 @@ export class Board {
   navigateToSettings() {
     this.router.navigate(['/settings']);
   }
+
+  // väliaikainen
+  navigateToLogin() {
+    this.router.navigate(['/login']);
+  }
 }
