@@ -49,8 +49,6 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Päivitä checklist-kohta (esim. siivous- tai muuttolista)
-// Tämä reitti on dynaaminen: se etsii käyttäjän ja päivittää tietyn kohdan tilan
 app.patch('/api/users/:userId/checklist', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -58,14 +56,15 @@ app.patch('/api/users/:userId/checklist', async (req, res) => {
     // listName: 'move_checklist' tai 'cleaning_checklist'
     // statusValue: true/false (done tai purchased)
 
-    const user = await User.findById(userId);
+    // KORJAUS: Käytetään findOne, koska _id on String
+    const user = await User.findOne({ _id: userId });
     if (!user) return res.status(404).json({ error: 'Käyttäjää ei löydy' });
 
-    // Määritetään kenttä, esim: "cleaning_checklist.0.done"
     const statusKey = listName === 'cleaning_checklist' ? 'done' : 'purchased';
     const updatePath = `${listName}.${itemIndex}.${statusKey}`;
 
-    await User.updateOne(
+    // KORJAUS: Käytetään findOneAndUpdate, jotta vältetään ObjectId-muunnos
+    await User.findOneAndUpdate(
       { _id: userId },
       { $set: { [updatePath]: statusValue } },
     );
