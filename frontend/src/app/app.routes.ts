@@ -3,6 +3,7 @@ import { Board } from './board/board';
 import { Settings } from './settings/settings';
 import { TopicLibrary } from './topic-library/topic-library';
 import { Budgeting } from './budgeting/budgeting';
+import { Entertainment } from './entertainment/entertainment';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/bulletinboard', pathMatch: 'full' },
@@ -10,4 +11,5 @@ export const routes: Routes = [
   { path: 'settings', component: Settings, title: 'Asetukset' },
   { path: 'topics', component: TopicLibrary, title: 'Arkivinkit' },
   { path: 'budgeting', component: Budgeting, title: 'Budjetti' },
+  { path: 'entertainment', component: Entertainment, title: 'Viihde' },
 ];

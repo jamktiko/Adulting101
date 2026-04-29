@@ -11,8 +11,10 @@ import { PostItNote } from '../post-it-note/post-it-note';
 export class Board {
   title = 'Adulting 101';
 
+  // Injektoidaan Router navigointia varten
   private router = inject(Router);
 
+  // Navigointimetodi: Asetukset-nappia klikkaamalla siirrytään Settings-komponenttiin
   navigateToSettings() {
     this.router.navigate(['/settings']);
   }
