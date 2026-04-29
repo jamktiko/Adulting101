@@ -112,3 +112,4 @@ Esimerkiksi näin.
 | ------------------------------------------------------------ | -------------- | ------- | -------------------------------------- |
 | Työntekijät eivät ole motivoituneita ja eivät saavu paikalle | Pieni          | Suuri   | Pidetään työpaikalla kahvia ja pullaa. |
 | Aarne tulee krapulassa kouluun                               | Suuri          | Pieni   | Aarne lopettaa alkoholinkäytön.        |
+| Tiimissä ei ole UI/UX-designeria                             | Suuri          | Suuri   | Opetellaan UI/UX-design esim AI:lla    |
