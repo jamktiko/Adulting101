@@ -99,50 +99,6 @@
         }
       </div>
     </div>
-  <!-- Poistettu: style="padding: 20px; max-width: 400px; margin: auto;" -->
-  <div class="login-wrapper">
-    <h2>Hei! Luo tili tai kirjaudu</h2>
-
-    @if (!showConfirm) {
-      <div class="login-form">
-        <!-- Poistettu: <br /><br /> -->
-        <input class="input-field" [(ngModel)]="username" placeholder="Käyttäjätunnus" />
-
-        <!-- Poistettu: <br /><br /> -->
-        <input
-          class="input-field"
-          [(ngModel)]="email"
-          placeholder="Sähköposti (vain rekisteröintiin)"
-        />
-
-        <!-- Poistettu: <br /><br /> -->
-        <input
-          class="input-field"
-          [(ngModel)]="password"
-          type="password"
-          placeholder="Salasana (Väh. 8 merkkiä, esim: Testi123!)"
-        />
-
-        <div class="button-group">
-          <button class="btn" (click)="signup()">Rekisteröidy</button>
-          <!-- Poistettu: style="margin-left: 10px;" -->
-          <button class="btn btn-primary" (click)="login()">Kirjaudu</button>
-        </div>
-      </div>
-    }
-
-    @if (showConfirm) {
-      <!-- Poistettu: style="margin-top: 20px;" -->
-      <div class="confirm-form">
-        <h3>Vahvista sähköpostiosoite</h3>
-        <!-- Poistettu: <br /><br /> -->
-        <input class="input-field" [(ngModel)]="code" placeholder="Sähköpostiisi tullut koodi" />
-        <button class="btn" (click)="confirm()">Vahvista Tili</button>
-      </div>
-    }
-
-    <!-- Poistettu: style="color: red; margin-top: 10px;" -->
-    <div class="error-message">{{ message }}</div>
   </div>
 }
 
