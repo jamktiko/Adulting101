@@ -1,4 +1,104 @@
 @if (!isLoggedIn) {
+  <div class="cork-board-bg">
+    <div class="login-wrapper">
+      <!-- Title Post-it -->
+      <div class="title-post-it">
+        <div class="tape"></div>
+        <div class="push-pin pin-red"></div>
+        <h1>Kirjaudu tai Rekisteröidy</h1>
+      </div>
+
+      <div class="post-its-container">
+        @if (!showConfirm) {
+          <!-- Käyttäjätunnus Post-it -->
+          <div class="post-it bg-yellow">
+            <div class="tape tape-left"></div>
+            <div class="push-pin pin-blue pin-left"></div>
+            <label for="username">Käyttäjätunnus</label>
+            <div class="input-wrapper">
+              <span class="icon">👤</span>
+              <input
+                type="text"
+                id="username"
+                [(ngModel)]="username"
+                placeholder="Syötä käyttäjätunnus"
+              />
+            </div>
+          </div>
+
+          <!-- Sähköposti Post-it -->
+          <div class="post-it bg-pink">
+            <div class="tape tape-right"></div>
+            <div class="push-pin pin-green pin-right"></div>
+            <label for="email">Sähköposti (vain rekisteröintiin)</label>
+            <div class="input-wrapper">
+              <span class="icon">✉️</span>
+              <input type="email" id="email" [(ngModel)]="email" placeholder="Syötä sähköposti" />
+            </div>
+          </div>
+
+          <!-- Salasana Post-it -->
+          <div class="post-it bg-blue">
+            <div class="tape tape-left-far"></div>
+            <div class="push-pin pin-purple pin-left-far"></div>
+            <label for="password">Salasana</label>
+            <div class="input-wrapper">
+              <span class="icon">🔒</span>
+              <input
+                type="password"
+                id="password"
+                [(ngModel)]="password"
+                placeholder="Salasana (Väh. 8 merkkiä)"
+              />
+            </div>
+          </div>
+
+          <!-- Buttons as Post-its -->
+          <div class="button-group">
+            <button class="btn-post-it bg-green" (click)="login()">
+              <div class="tape tape-center"></div>
+              <div class="push-pin pin-yellow pin-center"></div>
+              <span>Kirjaudu</span>
+            </button>
+
+            <button class="btn-post-it bg-orange" (click)="signup()">
+              <div class="tape tape-center"></div>
+              <div class="push-pin pin-red pin-center"></div>
+              <span>Rekisteröidy</span>
+            </button>
+          </div>
+        }
+
+        @if (showConfirm) {
+          <!-- Vahvistus Post-it -->
+          <div class="post-it bg-yellow" style="margin-top: 20px">
+            <div class="tape tape-left"></div>
+            <div class="push-pin pin-blue pin-left"></div>
+            <label for="confirmCode">Vahvista sähköpostiosoite</label>
+            <div class="input-wrapper">
+              <span class="icon">🔑</span>
+              <input
+                type="text"
+                id="confirmCode"
+                [(ngModel)]="code"
+                placeholder="Sähköpostiisi tullut koodi"
+              />
+            </div>
+            <div class="button-group" style="margin-top: 15px">
+              <button class="btn-post-it bg-green" (click)="confirm()">
+                <div class="tape tape-center"></div>
+                <div class="push-pin pin-yellow pin-center"></div>
+                <span>Vahvista Tili</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (message) {
+          <div class="error-message"><strong>Huomio!</strong> {{ message }}</div>
+        }
+      </div>
+    </div>
   <!-- Poistettu: style="padding: 20px; max-width: 400px; margin: auto;" -->
   <div class="login-wrapper">
     <h2>Hei! Luo tili tai kirjaudu</h2>
@@ -47,10 +147,19 @@
 }
 
 @if (isLoggedIn) {
-  <!-- Poistettu: style="padding: 20px; color: green;" -->
-  <div class="success-wrapper">
-    <h2>Olet kirjautunut sisään! 🎉</h2>
-    <p>Tokenisi on tallennettu selaimeesi.</p>
-    <button class="btn" (click)="logout()">Kirjaudu Ulos</button>
+  <div class="cork-board-bg">
+    <div class="login-wrapper">
+      <div class="post-it bg-green" style="transform: rotate(0deg); text-align: center">
+        <div class="tape tape-center"></div>
+        <div class="push-pin pin-red pin-center"></div>
+        <h2>Olet kirjautunut sisään! 🎉</h2>
+        <p>Tokenisi on tallennettu selaimeesi.</p>
+        <div class="button-group" style="justify-content: center; margin-top: 20px">
+          <button class="btn-post-it bg-orange" (click)="logout()">
+            <span>Kirjaudu Ulos</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 }

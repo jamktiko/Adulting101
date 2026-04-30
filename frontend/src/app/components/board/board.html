@@ -1,0 +1,11 @@
+<h1>{{ title }}</h1>
+
+<!-- väliaikainen -->
+<button (click)="navigateToLogin()">Kirjaudu</button>
+
+<button (click)="navigateToSettings()">Asetukset</button>
+
+<!-- Muistilaput eri väreillä ja otsikoilla, klikkauksella navigointi -->
+<app-post-it-note title="Arkivinkit" color="#4caf50" route="/topics" />
+<app-post-it-note title="Budjetti" color="#ffeb3b" route="/budgeting" />
+<app-post-it-note title="Viihde" color="#2196f3" route="/entertainment" />
