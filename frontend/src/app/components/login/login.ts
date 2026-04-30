@@ -7,48 +7,8 @@ import { Auth, LoginResponse } from '../../services/auth';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    @if (!isLoggedIn) {
-      <div style="padding: 20px; max-width: 400px; margin: auto;">
-        <h2>Hei! Luo tili tai kirjaudu</h2>
-
-        @if (!showConfirm) {
-          <div>
-            <input [(ngModel)]="username" placeholder="Käyttäjätunnus" /> <br /><br />
-            <input [(ngModel)]="email" placeholder="Sähköposti (vain rekisteröintiin)" />
-            <br /><br />
-            <input
-              [(ngModel)]="password"
-              type="password"
-              placeholder="Salasana (Väh. 8 merkkiä, esim: Testi123!)"
-            />
-            <br /><br />
-
-            <button (click)="signup()">Rekisteröidy</button>
-            <button (click)="login()" style="margin-left: 10px;">Kirjaudu</button>
-          </div>
-        }
-
-        @if (showConfirm) {
-          <div style="margin-top: 20px;">
-            <h3>Vahvista sähköpostiosoite</h3>
-            <input [(ngModel)]="code" placeholder="Sähköpostiisi tullut koodi" /> <br /><br />
-            <button (click)="confirm()">Vahvista Tili</button>
-          </div>
-        }
-
-        <div style="color: red; margin-top: 10px;">{{ message }}</div>
-      </div>
-    }
-
-    @if (isLoggedIn) {
-      <div style="padding: 20px; color: green;">
-        <h2>Olet kirjautunut sisään! 🎉</h2>
-        <p>Tokenisi on tallennettu selaimeesi.</p>
-        <button (click)="logout()">Kirjaudu Ulos</button>
-      </div>
-    }
-  `,
+  templateUrl: './login.html',
+  styleUrls: ['./login.css'],
 })
 export class LoginComponent {
   username = '';
