@@ -1,0 +1,9 @@
+.ghost {
+  position: absolute;
+  width: 192px;
+  height: 192px;
+  border: 2px dashed #facc15;
+  background: rgba(253, 224, 71, 0.2);
+  pointer-events: none;
+  z-index: 1000;
+}

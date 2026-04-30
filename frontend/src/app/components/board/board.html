@@ -1,4 +1,4 @@
-<h1>{{ title }}</h1>
+<!-- <h1>{{ title }}</h1> -->
 
 <!-- väliaikainen -->
 <button (click)="navigateToLogin()">Kirjaudu</button>
@@ -9,3 +9,16 @@
 <app-post-it-note title="Arkivinkit" color="#4caf50" route="/topics" />
 <app-post-it-note title="Budjetti" color="#ffeb3b" route="/budgeting" />
 <app-post-it-note title="Viihde" color="#2196f3" route="/entertainment" />
+
+<!-- <div #board class="board">
+  <app-ghost *ngIf="ghostPosition" [position]="ghostPosition"></app-ghost>
+
+  <app-post-it
+    *ngFor="let p of postIts"
+    [postIt]="p"
+    [active]="activeId === p.id"
+    (dragMove)="onDragMove($event, p)"
+    (dragEnd)="onDragEnd($event, p)"
+    (activate)="setActive($event)"
+  ></app-post-it>
+</div> -->
