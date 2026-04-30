@@ -1,0 +1,263 @@
+/* Tausta (Ilmoitustaulu) */
+.cork-board-bg {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: linear-gradient(
+    135deg,
+    #c19a6b 0%,
+    #d4a76a 25%,
+    #c19a6b 50%,
+    #d4a76a 75%,
+    #c19a6b 100%
+  );
+  background-image:
+    linear-gradient(135deg, #c19a6b 0%, #d4a76a 25%, #c19a6b 50%, #d4a76a 75%, #c19a6b 100%),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(139, 90, 43, 0.08) 2px,
+      rgba(139, 90, 43, 0.08) 4px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 2px,
+      rgba(139, 90, 43, 0.08) 2px,
+      rgba(139, 90, 43, 0.08) 4px
+    );
+  background-size: cover;
+  background-position: center;
+  font-family: sans-serif;
+}
+
+.login-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Otsikon Post-it */
+.title-post-it {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%) rotate(2deg);
+  background-color: #fdf08a; /* yellow-300 */
+  padding: 16px 32px;
+  border: 2px solid #facc15;
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  z-index: 10;
+}
+
+.title-post-it h1 {
+  color: #1f2937;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  text-align: center;
+}
+
+.post-its-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 32px;
+}
+
+/* Yleinen Post-it logiikka */
+.post-it {
+  position: relative;
+  padding: 24px;
+  border: 2px solid;
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+}
+
+.post-it label {
+  display: block;
+  margin-bottom: 12px;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Post-it Värit & Käännöt */
+.bg-yellow {
+  background-color: #fef08a;
+  border-color: #fde047;
+  transform: rotate(-1deg);
+}
+.bg-pink {
+  background-color: #fbcfe8;
+  border-color: #f9a8d4;
+  transform: rotate(1deg);
+}
+.bg-blue {
+  background-color: #bfdbfe;
+  border-color: #93c5fd;
+  transform: rotate(-1deg);
+}
+.bg-green {
+  background-color: #86efac;
+  border-color: #4ade80;
+}
+.bg-orange {
+  background-color: #fdba74;
+  border-color: #fb923c;
+}
+
+/* Input field tyylit */
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper .icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #4b5563;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 12px 16px 12px 44px; /* Tilaa ikonille */
+  background-color: white;
+  border: 2px solid #9ca3af;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: #374151;
+}
+
+/* Napit (Buttons as Post-its) */
+.button-group {
+  display: flex;
+  gap: 20px;
+  padding-top: 24px;
+}
+
+.btn-post-it {
+  position: relative;
+  flex: 1;
+  padding: 20px 24px;
+  border: 2px solid;
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  transition: all 0.2s;
+}
+
+.btn-post-it.bg-green {
+  transform: rotate(1deg);
+}
+.btn-post-it.bg-orange {
+  transform: rotate(-1deg);
+}
+
+.btn-post-it:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.btn-post-it:active {
+  transform: scale(0.95);
+}
+
+/* Teipit */
+.tape {
+  position: absolute;
+  height: 16px;
+  width: 56px;
+  border-radius: 2px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  top: -12px;
+}
+
+.title-post-it .tape {
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(250, 204, 21, 0.7);
+}
+.tape-left {
+  left: 48px;
+  background-color: rgba(253, 224, 71, 0.7);
+}
+.tape-right {
+  right: 48px;
+  background-color: rgba(249, 168, 212, 0.7);
+}
+.tape-left-far {
+  left: 64px;
+  background-color: rgba(147, 197, 253, 0.7);
+}
+.tape-center {
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Nupeusneulat (Push pins) */
+.push-pin {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid;
+  top: -4px;
+}
+
+.pin-red {
+  background-color: #ef4444;
+  border-color: #dc2626;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pin-blue {
+  background-color: #3b82f6;
+  border-color: #2563eb;
+  left: 76px;
+}
+.pin-green {
+  background-color: #22c55e;
+  border-color: #16a34a;
+  right: 24px;
+}
+.pin-purple {
+  background-color: #a855f7;
+  border-color: #9333ea;
+  left: 92px;
+}
+.pin-yellow {
+  background-color: #eab308;
+  border-color: #ca8a04;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pin-center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Virheilmoituksen Post-it */
+.error-message {
+  margin-top: 10px;
+  background-color: #fee2e2;
+  border: 2px solid #ef4444;
+  padding: 12px;
+  color: #b91c1c;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+  transform: rotate(1deg);
+}
