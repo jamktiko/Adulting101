@@ -1,8 +1,21 @@
-.note {
-  position: absolute;
-  width: 192px;
-  height: 192px;
-  padding: 16px;
-  cursor: move;
+.post-it-note {
+  width: 150px;
+  height: 150px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  transition: transform 0.2s; /* Hover-efekti */
+}
+
+.post-it-note:hover {
+  transform: scale(1.05); /* Pieni zoom hoverilla */
+}
+
+.post-it-note:focus {
+  outline: 2px solid #007bff; /* Fokus-indikaattori saavutettavuutta varten */
 }
