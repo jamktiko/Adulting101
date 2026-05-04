@@ -18,7 +18,8 @@ export interface GenericResponse {
 })
 export class Auth {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl =
+    'http://Adulting101-backend-env.eba-3zabg9kd.eu-north-1.elasticbeanstalk.com/api';
 
   signup(username: string, email: string, password: string): Observable<GenericResponse> {
     return this.http.post<GenericResponse>(`${this.apiUrl}/signup`, { username, email, password });
