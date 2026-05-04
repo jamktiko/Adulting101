@@ -1,12 +1,14 @@
 import { InMemoryDbService } from 'angular-in-memory-web-api';
 import { Injectable } from '@angular/core';
+import { Checklist } from '../models/checklist';
+import { Guide } from '../models/guide';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InMemoryDataService implements InMemoryDbService {
   createDb() {
-    const muutto = [
+    const muutto: Checklist[] = [
       {
         id: 'muutto-001',
         title: 'Vuokra-asujan muistilista',
@@ -35,7 +37,7 @@ export class InMemoryDataService implements InMemoryDbService {
       },
     ];
 
-    const siivous = [
+    const siivous: Guide[] = [
       {
         id: 'siivous-001',
         title: 'Pyykkäys',
