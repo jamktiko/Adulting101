@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http'; // http-olio hakee datan
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs'; // data haetaan asynkronisesti observablena
-// import { catchError } from 'rxjs/operators'; // virheenkäsittelyä varten
 import { Checklist } from '../models/checklist';
 import { Guide } from '../models/guide';
 
@@ -9,18 +8,24 @@ import { Guide } from '../models/guide';
   providedIn: 'root',
 })
 export class DataService {
-  private apiurlMoving = 'api/muutto'; // valepalvelimen eli in-memory-web-apin osoite. täältä data tulee.
+  // Valepalvelimen eli in-memory-web-apin osoitteet. Täältä data tulee.
+  private apiurlMoving = 'api/muutto';
   private apiurlCleaning = 'api/siivous';
 
   private http = inject(HttpClient);
 
-  // Haetaan observablena koko muutto-taulukko
-  getMovingData(): Observable<Checklist[]> {
-    return this.http.get<Checklist[]>(this.apiurlMoving);
-  }
+  categoryTitle = signal('');
 
-  // Haetaan observablena koko siivous-taulukko
-  getCleaningData(): Observable<Guide[]> {
-    return this.http.get<Guide[]>(this.apiurlCleaning);
+  getTopicData(category: string): Observable<Checklist[] | Guide[]> {
+    switch (category) {
+      case 'moving':
+        this.categoryTitle.set('Muutto');
+        return this.http.get<Checklist[]>(this.apiurlMoving);
+      case 'cleaning':
+        this.categoryTitle.set('Siivous');
+        return this.http.get<Guide[]>(this.apiurlCleaning);
+      default:
+        throw new Error('Datan hakeminen epäonnistui: tuntematon kategoria');
+    }
   }
 }

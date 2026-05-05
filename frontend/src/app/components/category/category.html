@@ -1,1 +1,19 @@
-<p>category works!</p>
+<div class="category">
+  @if (loading()) {
+    <p>Ladataan...</p>
+  } @else if (content()) {
+    <h2>{{ category() }}</h2>
+    <div class="items">
+      @for (item of content(); track item.id) {
+        <div class="item">
+          <h3>{{ item.title }}</h3>
+          <ul>
+            @for (line of item.items || item.content; track line) {
+              <li>{{ line }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  }
+</div>
