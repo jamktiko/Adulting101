@@ -45,7 +45,7 @@
   position: absolute;
   top: -80px;
   left: 50%;
-  transform: translateX(-50%) rotate(2deg);
+  transform: translateX(-50%);
   background-color: #fdf08a; /* yellow-300 */
   padding: 16px 32px;
   border: 2px solid #facc15;
@@ -89,17 +89,14 @@
 .bg-yellow {
   background-color: #fef08a;
   border-color: #fde047;
-  transform: rotate(-1deg);
 }
 .bg-pink {
   background-color: #fbcfe8;
   border-color: #f9a8d4;
-  transform: rotate(1deg);
 }
 .bg-blue {
   background-color: #bfdbfe;
   border-color: #93c5fd;
-  transform: rotate(-1deg);
 }
 .bg-green {
   background-color: #86efac;
@@ -159,13 +156,6 @@
   font-weight: 600;
   color: #1f2937;
   transition: all 0.2s;
-}
-
-.btn-post-it.bg-green {
-  transform: rotate(1deg);
-}
-.btn-post-it.bg-orange {
-  transform: rotate(-1deg);
 }
 
 .btn-post-it:hover {
@@ -259,5 +249,4 @@
   padding: 12px;
   color: #b91c1c;
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
-  transform: rotate(1deg);
 }

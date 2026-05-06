@@ -1,4 +1,14 @@
-<!-- Muistilapun väri ja otsikko tulevat "propseina" Board-komponentista -->
-<div class="post-it-note" [style.background-color]="color()" (click)="navigate()">
-  {{ title() }}
+<!-- Muistilapun väri, otsikko ja sisältö tulevat "propseina" Board-komponentista -->
+<div
+  class="post-it-note"
+  [style.background-color]="color()"
+  (click)="onClick()"
+  [style.cursor]="'pointer'"
+>
+  @if (isDeletable()) {
+    <button class="delete-btn" (click)="onDelete($event)" title="Poista muistilappu">X</button>
+  }
+
+  <div class="tape tape-center"></div>
+  <h3 style="margin-top: 10px; margin-bottom: 8px">{{ title() }}</h3>
 </div>

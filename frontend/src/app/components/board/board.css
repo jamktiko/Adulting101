@@ -1,9 +1,91 @@
 .board {
   position: relative;
   width: 100%;
-  height: 700px;
-  background-color: #c19a6b;
+  min-height: 700px;
+  /* background-color poistettu, jotta globaali tausta näkyy */
   overflow: hidden;
+  padding: 20px;
+}
+
+.top-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.top-controls button {
+  padding: 10px 16px;
+  border-radius: 4px;
+  border: 2px solid #9ca3af;
+  background-color: white;
+  cursor: pointer;
+  font-weight: bold;
+  z-index: 10;
+  position: relative;
+}
+
+/* Uusi vapaa raahausalue */
+.board-area {
+  position: relative;
+  width: 100%;
+  height: 600px;
+}
+
+/* CdkDrag container tyyli */
+.draggable-note {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1; /* Oletus z-index */
+  cursor: grab;
+}
+
+.draggable-note:active {
+  cursor: grabbing;
+  z-index: 10; /* Nousee muiden yli kun raahataan */
+}
+
+/* Haamumuistilappu joka näyttää mihin ruutuun lappu loksahtaa */
+.ghost-note {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150px;
+  height: 150px;
+  border: 3px dashed #facc15;
+  background: rgba(253, 224, 71, 0.25);
+  pointer-events: none;
+  z-index: 5; /* Haamu leijuu aina alla / välissä */
+}
+
+/* Modal tausta overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* Modalin post-it tyyli */
+.modal-post-it {
+  width: 320px;
+  text-align: center;
+  z-index: 101;
+  box-shadow: 12px 12px 0px rgba(0, 0, 0, 0.3);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 16px;
 }
 
 .note-grid {
