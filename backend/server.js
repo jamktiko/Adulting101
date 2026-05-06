@@ -135,6 +135,15 @@ app.post('/api/budgets', async (req, res) => {
   }
 });
 
+app.get('/api/budgets', async (req, res) => {
+  try {
+    const budgets = await Budget.find();
+    res.json(budgets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/budgets/:userId', async (req, res) => {
   try {
     const userBudgets = await Budget.find({ user_id: req.params.userId });
@@ -162,6 +171,16 @@ app.post('/api/entertainment', async (req, res) => {
     res.status(201).json(savedItem);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// Hae KAIKKI viihdekohteet
+app.get('/api/entertainment', async (req, res) => {
+  try {
+    const items = await Entertainment.find();
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
