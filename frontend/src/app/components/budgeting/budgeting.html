@@ -1,1 +1,50 @@
-<p>budgeting works!</p>
+<div class="budget-container">
+  <!-- Kuukauden valinta -->
+  <div class="month-selector">
+    <button (click)="changeMonth('prev')">← Edellinen</button>
+    <span>{{ currentMonth() }}</span>
+    <button (click)="changeMonth('next')">Seuraava →</button>
+  </div>
+
+  <!-- Budjetin raja -->
+  <div class="budget-limit">
+    <label for="monthlyBudget">Kuukausibudjetin raja:</label>
+    <input
+      id="monthlyBudget"
+      type="number"
+      [value]="budgetLimit()"
+      (change)="updateBudgetLimit(+$event.target.value)"
+    />
+    <div class="progress-bar">
+      <div class="progress" [style.width.%]="budgetPercentage()"></div>
+    </div>
+    <p>{{ totalExpenses() }} € / {{ budgetLimit() }} €</p>
+  </div>
+
+  <!-- Yhteenveto -->
+  <div class="summary">
+    <div class="income"><strong>Tulot:</strong> {{ totalIncome() }} €</div>
+    <div class="expenses"><strong>Menot:</strong> {{ totalExpenses() }} €</div>
+    <div class="balance" [class.negative]="balance() < 0">
+      <strong>Saldo:</strong> {{ balance() }} €
+    </div>
+  </div>
+
+  <!-- Merkintöjen lista -->
+  <div class="entries">
+    <h3>Merkinnät</h3>
+    @for (entry of entries(); track entry._id) {
+      <div class="entry" [class.income]="entry.type === 'income'">
+        <span>{{ entry.category }}</span>
+        <span>{{ entry.amount }} €</span>
+        <button (click)="deleteEntry(entry._id)">Poista</button>
+      </div>
+    }
+  </div>
+
+  <!-- Uusi merkintä -->
+  <div class="add-entry">
+    <h3>Lisää merkintä</h3>
+    <!-- Lomake täällä -->
+  </div>
+</div>

@@ -69,7 +69,7 @@ app.patch('/api/users/:userId/cleaning-checklist', async (req, res) => {
 
     await User.findOneAndUpdate(
       { _id: userId },
-      { $set: { [updatePath]: statusValue } }
+      { $set: { [updatePath]: statusValue } },
     );
 
     res.json({ message: 'Siivouslista päivitetty' });
@@ -86,16 +86,18 @@ app.get('/api/users/:userId/move-checklist', async (req, res) => {
     const { userId } = req.params;
     const allItems = await MoveItem.find(); // Haetaan kaikki tavarat master-kannasta
     const user = await User.findOne({ _id: userId });
-    
+
     if (!user) return res.status(404).json({ error: 'Käyttäjää ei löytynyt' });
 
-    const response = allItems.map(item => {
+    const response = allItems.map((item) => {
       return {
         _id: item._id,
         name: item.name,
         category: item.category,
         // Tarkistetaan löytyykö tavaran ID käyttäjän listalta
-        purchased: user.purchased_items ? user.purchased_items.includes(item._id) : false
+        purchased: user.purchased_items
+          ? user.purchased_items.includes(item._id)
+          : false,
       };
     });
 
@@ -112,8 +114,8 @@ app.patch('/api/users/:userId/toggle-move-item', async (req, res) => {
     const { itemId, isPurchased } = req.body;
 
     // Jos isPurchased on true, lisätään ID listaan. Jos false, poistetaan.
-    const update = isPurchased 
-      ? { $addToSet: { purchased_items: itemId } } 
+    const update = isPurchased
+      ? { $addToSet: { purchased_items: itemId } }
       : { $pull: { purchased_items: itemId } };
 
     await User.updateOne({ _id: userId }, update);
@@ -125,38 +127,97 @@ app.patch('/api/users/:userId/toggle-move-item', async (req, res) => {
 
 // --- 2. BUDJETTI (TALOUS) ---
 
-app.post('/api/budgets', async (req, res) => {
+// alkuperäinen
+
+// app.post('/api/budgets', async (req, res) => {
+//   try {
+//     const newEntry = new Budget(req.body);
+//     const savedEntry = await newEntry.save();
+//     res.status(201).json(savedEntry);
+//   } catch (err) {
+//     res.status(400).json({ error: err.message });
+//   }
+// });
+
+// app.get('/api/budgets', async (req, res) => {
+//   try {
+//     const budgets = await Budget.find();
+//     res.json(budgets);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// app.get('/api/budgets/:userId', async (req, res) => {
+//   try {
+//     const userBudgets = await Budget.find({ user_id: req.params.userId });
+//     res.json(userBudgets);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// app.delete('/api/budgets/:id', async (req, res) => {
+//   try {
+//     await Budget.findByIdAndDelete(req.params.id);
+//     res.json({ message: 'Merkintä poistettu' });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// Hae käyttäjän budjetti tietylle kuukaudelle
+app.get('/api/budgets/:userId/:month', async (req, res) => {
   try {
-    const newEntry = new Budget(req.body);
-    const savedEntry = await newEntry.save();
-    res.status(201).json(savedEntry);
+    const budget = await Budget.findOne({
+      user_id: req.params.userId,
+      month: req.params.month,
+    });
+    res.json(budget || { entries: [] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Päivitä kuukausibudjetin raja
+app.patch('/api/budgets/:userId/:month/limit', async (req, res) => {
+  try {
+    const { monthlyBudgetLimit } = req.body;
+    const budget = await Budget.findOneAndUpdate(
+      { user_id: req.params.userId, month: req.params.month },
+      { monthlyBudgetLimit },
+      { upsert: true, new: true },
+    );
+    res.json(budget);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Lisää tulo tai meno
+app.post('/api/budgets/:userId/:month/entry', async (req, res) => {
+  try {
+    const entry = req.body;
+    const budget = await Budget.findOneAndUpdate(
+      { user_id: req.params.userId, month: req.params.month },
+      { $push: { entries: entry } },
+      { upsert: true, new: true },
+    );
+    res.status(201).json(budget);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.get('/api/budgets', async (req, res) => {
+// Poista merkintä
+app.delete('/api/budgets/:userId/:month/entry/:entryId', async (req, res) => {
   try {
-    const budgets = await Budget.find();
-    res.json(budgets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/budgets/:userId', async (req, res) => {
-  try {
-    const userBudgets = await Budget.find({ user_id: req.params.userId });
-    res.json(userBudgets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.delete('/api/budgets/:id', async (req, res) => {
-  try {
-    await Budget.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Merkintä poistettu' });
+    const budget = await Budget.findOneAndUpdate(
+      { user_id: req.params.userId, month: req.params.month },
+      { $pull: { entries: { _id: req.params.entryId } } },
+      { new: true },
+    );
+    res.json(budget);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -206,11 +267,11 @@ app.post('/api/signup', async (req, res) => {
       email: email,
       password: 'COGNITO_HANDLES_THIS',
       cleaning_checklist: [
-          { task: "Imurointi", done: false },
-          { task: "Tiskien pesu", done: false },
-          { task: "Pölyjen pyyhintä", done: false }
+        { task: 'Imurointi', done: false },
+        { task: 'Tiskien pesu', done: false },
+        { task: 'Pölyjen pyyhintä', done: false },
       ],
-      purchased_items: [] // Alustetaan tyhjä lista hankinnoille
+      purchased_items: [], // Alustetaan tyhjä lista hankinnoille
     });
     await newUser.save();
 

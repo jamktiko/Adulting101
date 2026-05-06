@@ -12,6 +12,8 @@ export class DataService {
   private apiurlMoving = 'api/muutto';
   private apiurlCleaning = 'api/siivous';
 
+  private apiUrlBudget = 'api/budgets';
+
   private http = inject(HttpClient);
 
   categoryTitle = signal('');
@@ -27,5 +29,27 @@ export class DataService {
       default:
         throw new Error('Datan hakeminen epäonnistui: tuntematon kategoria');
     }
+  }
+
+  // Hae budjetti kuukaudelle
+  getBudget(userId: string, month: string): Observable<any> {
+    return this.http.get(`${this.apiUrlBudget}/${userId}/${month}`);
+  }
+
+  // Aseta kuukausibudjetin raja
+  setBudgetLimit(userId: string, month: string, limit: number): Observable<any> {
+    return this.http.patch(`${this.apiUrlBudget}/${userId}/${month}/limit`, {
+      monthlyBudgetLimit: limit,
+    });
+  }
+
+  // Lisää merkintä
+  addEntry(userId: string, month: string, entry: any): Observable<any> {
+    return this.http.post(`${this.apiUrlBudget}/${userId}/${month}/entry`, entry);
+  }
+
+  // Poista merkintä
+  deleteEntry(userId: string, month: string, entryId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrlBudget}/${userId}/${month}/entry/${entryId}`);
   }
 }
