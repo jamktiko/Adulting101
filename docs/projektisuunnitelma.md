@@ -58,11 +58,11 @@ _Kirjaa tähän lukuun aikataulu. Millä tavoin projekti viedään läpi. Voitte
 | Tuotanto | 27.04.2026 | Frontendin pystytys + tietokannan rakennus |
 | Tuotanto | 28.04.2026 | Testikäyttäjä tietokantaan, kirjautumissuunnittelu |
 | Tuotanto | 29.04.2026 | Frontend jatkuu, UI/UX aloitettu, kirjautumissuunnittelu |
-| Tuotanto | 30.04.2026 | ........................................................ |
+| Tuotanto | 30.04.2026 | UI/UX jatkuu |
 
-| Tuotanto | 04.05.2026 | ........................................................ |
-| Tuotanto | 05.05.2026 | ........................................................ |
-| Tuotanto | 06.05.2026 | ........................................................ |
+| Tuotanto | 04.05.2026 | Projektin edistämistä, UI/UX, frontend |
+| Tuotanto | 05.05.2026 | Itsenäistä työskentelyä omilla vastuualueilla |
+| Tuotanto | 06.05.2026 | UI/UX edistämistä, frontend, tietokannan muokkaus |
 | Tuotanto | 07.05.2026 | ........................................................ |
 | Tuotanto | 08.05.2026 | ........................................................ |
 
