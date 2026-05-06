@@ -15,6 +15,7 @@ console.log(
 const User = require('./models/User');
 const Budget = require('./models/Budget');
 const Entertainment = require('./models/Entertainment');
+const MoveItem = require('./models/MoveItem'); // Uusi Master-lista malli
 
 const app = express();
 
@@ -32,14 +33,12 @@ mongoose
 // --- REITIT (ROUTES) ---
 
 app.get('/', (req, res) => {
-  res.send(
-    'Paljon onnea kaikille syntymäpäiväsankareille ja hyvää vappua jutille! 🎉',
-  );
+  res.send('Paljon onnea kaikille syntymäpäiväsankareille! 🎉');
 });
 
 // --- 1. KÄYTTÄJÄT JA CHECKLISTIT ---
 
-// Hae kaikki käyttäjät
+// Hae kaikki käyttäjät (hallintaa varten)
 app.get('/api/users', async (req, res) => {
   try {
     const users = await User.find();
@@ -49,27 +48,76 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-app.patch('/api/users/:userId/checklist', async (req, res) => {
+// Hae yksittäisen käyttäjän tiedot (sisältäen siivouslistan)
+app.get('/api/users/:userId', async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.userId });
+    if (!user) return res.status(404).json({ error: 'Käyttäjää ei löydy' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Siivouslistan päivitys (käyttäjäkohtainen lista)
+app.patch('/api/users/:userId/cleaning-checklist', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { listName, itemIndex, statusValue } = req.body;
-    // listName: 'move_checklist' tai 'cleaning_checklist'
-    // statusValue: true/false (done tai purchased)
+    const { itemIndex, statusValue } = req.body;
 
-    // KORJAUS: Käytetään findOne, koska _id on String
-    const user = await User.findOne({ _id: userId });
-    if (!user) return res.status(404).json({ error: 'Käyttäjää ei löydy' });
+    const updatePath = `cleaning_checklist.${itemIndex}.done`;
 
-    const statusKey = listName === 'cleaning_checklist' ? 'done' : 'purchased';
-    const updatePath = `${listName}.${itemIndex}.${statusKey}`;
-
-    // KORJAUS: Käytetään findOneAndUpdate, jotta vältetään ObjectId-muunnos
     await User.findOneAndUpdate(
       { _id: userId },
-      { $set: { [updatePath]: statusValue } },
+      { $set: { [updatePath]: statusValue } }
     );
 
-    res.json({ message: 'Checklist päivitetty' });
+    res.json({ message: 'Siivouslista päivitetty' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- MUUTTOLISTA (MASTER-LISTA LOGIIKKA) ---
+
+// Hae yhdistetty muuttolista (kaikki tavarat + käyttäjän hankinnat)
+app.get('/api/users/:userId/move-checklist', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const allItems = await MoveItem.find(); // Haetaan kaikki tavarat master-kannasta
+    const user = await User.findOne({ _id: userId });
+    
+    if (!user) return res.status(404).json({ error: 'Käyttäjää ei löytynyt' });
+
+    const response = allItems.map(item => {
+      return {
+        _id: item._id,
+        name: item.name,
+        category: item.category,
+        // Tarkistetaan löytyykö tavaran ID käyttäjän listalta
+        purchased: user.purchased_items ? user.purchased_items.includes(item._id) : false
+      };
+    });
+
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Muuttolistan tavaran tilan vaihtaminen (Checkbox klikkaus)
+app.patch('/api/users/:userId/toggle-move-item', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { itemId, isPurchased } = req.body;
+
+    // Jos isPurchased on true, lisätään ID listaan. Jos false, poistetaan.
+    const update = isPurchased 
+      ? { $addToSet: { purchased_items: itemId } } 
+      : { $pull: { purchased_items: itemId } };
+
+    await User.updateOne({ _id: userId }, update);
+    res.json({ message: 'Tavaran tila päivitetty' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -77,7 +125,6 @@ app.patch('/api/users/:userId/checklist', async (req, res) => {
 
 // --- 2. BUDJETTI (TALOUS) ---
 
-// Lisää uusi budjettimerkintä
 app.post('/api/budgets', async (req, res) => {
   try {
     const newEntry = new Budget(req.body);
@@ -88,17 +135,6 @@ app.post('/api/budgets', async (req, res) => {
   }
 });
 
-// Hae tietyn käyttäjän budjetti
-app.get('/api/budgets/:userId', async (req, res) => {
-  try {
-    const userBudgets = await Budget.find({ user_id: req.params.userId });
-    res.json(userBudgets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// LISÄÄ TÄMÄ: Hae kaikki budjettimerkinnät (localhost:3000/api/budgets)
 app.get('/api/budgets', async (req, res) => {
   try {
     const budgets = await Budget.find();
@@ -108,7 +144,15 @@ app.get('/api/budgets', async (req, res) => {
   }
 });
 
-// Poista budjettimerkintä
+app.get('/api/budgets/:userId', async (req, res) => {
+  try {
+    const userBudgets = await Budget.find({ user_id: req.params.userId });
+    res.json(userBudgets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.delete('/api/budgets/:id', async (req, res) => {
   try {
     await Budget.findByIdAndDelete(req.params.id);
@@ -120,7 +164,6 @@ app.delete('/api/budgets/:id', async (req, res) => {
 
 // --- 3. VIIHDE (ENTERTAINMENT) ---
 
-// Lisää uusi viihdekohde
 app.post('/api/entertainment', async (req, res) => {
   try {
     const newItem = new Entertainment(req.body);
@@ -131,7 +174,16 @@ app.post('/api/entertainment', async (req, res) => {
   }
 });
 
-// Hae tietyn käyttäjän viihdelista
+// Hae KAIKKI viihdekohteet
+app.get('/api/entertainment', async (req, res) => {
+  try {
+    const items = await Entertainment.find();
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/entertainment/:userId', async (req, res) => {
   try {
     const items = await Entertainment.find({ user_id: req.params.userId });
@@ -141,66 +193,50 @@ app.get('/api/entertainment/:userId', async (req, res) => {
   }
 });
 
-// LISÄÄ TÄMÄ: Hae kaikki viihdekohteet (localhost:3000/api/entertainment)
-app.get('/api/entertainment', async (req, res) => {
-  try {
-    const items = await Entertainment.find();
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-// --- 4. AUTENTIKOINTI JA REKISTERÖINTI (COGNITO) ---
+// --- 4. AUTENTIKOINTI (COGNITO) ---
 
-// REKISTERÖINTI
 app.post('/api/signup', async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
-    // Luodaan käyttäjä Cognitoon
     const cognitoResult = await signUpUser(username, email, password);
 
-    // Luodaan ja tallennetaan käyttäjä MongoDB-kantaan
     const newUser = new User({
-      _id: cognitoResult.UserSub, // Cogniton tuottama yksilöllinen ID
+      _id: cognitoResult.UserSub,
       username: username,
       email: email,
-      password: 'COGNITO_HANDLES_THIS', // Cognito hoitaa oikean salasanan tästä edes
-      cleaning_checklist: [],
-      move_checklist: [],
+      password: 'COGNITO_HANDLES_THIS',
+      cleaning_checklist: [
+          { task: "Imurointi", done: false },
+          { task: "Tiskien pesu", done: false },
+          { task: "Pölyjen pyyhintä", done: false }
+      ],
+      purchased_items: [] // Alustetaan tyhjä lista hankinnoille
     });
     await newUser.save();
 
-    res
-      .status(200)
-      .json({ message: 'Rekisteröityminen onnistui. Tarkista sähköposti!' });
+    res.status(200).json({ message: 'Rekisteröityminen onnistui.' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// VAHVISTUS (Sähköpostista tulleen koodin syöttö)
 app.post('/api/confirm', async (req, res) => {
   try {
     const { username, code } = req.body;
     await confirmUser(username, code);
-
-    res.status(200).json({ message: 'Tili vahvistettu onnistuneesti!' });
+    res.status(200).json({ message: 'Tili vahvistettu!' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// KIRJAUTUMINEN
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     const tokens = await loginUser(username, password);
-
-    // Palautetaan tokenit frontendille
     res.status(200).json(tokens);
   } catch (error) {
-    res.status(401).json({ error: 'Käyttäjätunnus tai salasana on väärin' });
+    res.status(401).json({ error: 'Kirjautumisvirhe' });
   }
 });
 
