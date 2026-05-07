@@ -1,5 +1,4 @@
-export interface BudgetEntry {
-  _id: string;
+export interface NewBudgetEntry {
   type: 'income' | 'expense';
   category: string;
   amount: number;

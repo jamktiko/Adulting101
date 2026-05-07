@@ -3,15 +3,17 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs'; // data haetaan asynkronisesti observablena
 import { Checklist } from '../models/checklist';
 import { Guide } from '../models/guide';
+import { NewBudgetEntry } from '../models/new-budget-entry';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
-  // Valepalvelimen eli in-memory-web-apin osoitteet. Täältä data tulee.
+  // Valepalvelimen eli in-memory-web-apin osoitteet. Täältä tulee sisältö arki-osion kategorioihin.
   private apiurlMoving = 'api/muutto';
   private apiurlCleaning = 'api/siivous';
 
+  // Oikean palvelimen osoite
   private apiUrlBudget = 'api/budgets';
 
   private http = inject(HttpClient);
@@ -44,7 +46,7 @@ export class DataService {
   }
 
   // Lisää merkintä
-  addEntry(userId: string, month: string, entry: any): Observable<any> {
+  addEntry(userId: string, month: string, entry: NewBudgetEntry): Observable<any> {
     return this.http.post(`${this.apiUrlBudget}/${userId}/${month}/entry`, entry);
   }
 

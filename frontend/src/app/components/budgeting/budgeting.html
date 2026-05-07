@@ -45,6 +45,65 @@
   <!-- Uusi merkintä -->
   <div class="add-entry">
     <h3>Lisää merkintä</h3>
-    <!-- Lomake täällä -->
+    <form [formGroup]="entryForm" (ngSubmit)="submitEntry()">
+      <!-- Tyyppi: Tulo vai Meno -->
+      <div class="form-group">
+        <label for="entryType">Tyyppi:</label>
+        <select id="entryType" formControlName="type">
+          <option value="expense">Meno</option>
+          <option value="income">Tulo</option>
+        </select>
+      </div>
+
+      <!-- Kategoria -->
+      <div class="form-group">
+        <label for="category">Kategoria:</label>
+        <input
+          id="category"
+          type="text"
+          formControlName="category"
+          placeholder="esim. Ruoka, Polttoaine"
+        />
+        @if (
+          entryForm.get('category')?.hasError('required') && entryForm.get('category')?.touched
+        ) {
+          <span class="error">Kategoria vaaditaan</span>
+        }
+      </div>
+
+      <!-- Summa -->
+      <div class="form-group">
+        <label for="amount">Summa (€):</label>
+        <input id="amount" type="number" formControlName="amount" placeholder="0.00" step="0.01" />
+        @if (entryForm.get('amount')?.hasError('required') && entryForm.get('amount')?.touched) {
+          <span class="error">Summa vaaditaan</span>
+        }
+        @if (entryForm.get('amount')?.hasError('min') && entryForm.get('amount')?.touched) {
+          <span class="error">Summa täytyy olla positiivinen</span>
+        }
+      </div>
+
+      <!-- Kuvaus -->
+      <div class="form-group">
+        <label for="description">Kuvaus:</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Lisätietoja (valinnainen)"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <!-- Päivämäärä -->
+      <div class="form-group">
+        <label for="date">Päivämäärä:</label>
+        <input id="date" type="date" formControlName="date" />
+      </div>
+
+      <!-- Nappi -->
+      <button type="submit" [disabled]="entryForm.invalid" class="submit-btn">
+        Lisää merkintä
+      </button>
+    </form>
   </div>
 </div>

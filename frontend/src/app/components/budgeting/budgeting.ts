@@ -1,9 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { signal, computed } from '@angular/core';
 import { DataService } from '../../services/data.service';
 import { BudgetEntry } from '../../models/budget-entry';
+import { NewBudgetEntry } from '../../models/new-budget-entry';
 
 @Component({
   selector: 'app-budgeting',
@@ -13,6 +14,8 @@ import { BudgetEntry } from '../../models/budget-entry';
 })
 export class Budgeting implements OnInit {
   private dataService = inject(DataService);
+
+  private fb = inject(FormBuilder);
 
   // Signaalit
   currentMonth = signal(this.getCurrentMonth());
@@ -35,6 +38,30 @@ export class Budgeting implements OnInit {
     return limit > 0 ? (this.totalExpenses() / limit) * 100 : 0;
   });
 
+  // Lomakkeen FormGroup
+  entryForm = this.fb.group({
+    type: ['expense', Validators.required],
+    category: ['', Validators.required],
+    amount: [0, [Validators.required, Validators.min(0.01)]],
+    description: [''],
+    date: [new Date().toISOString().split('T')[0], Validators.required],
+  });
+
+  submitEntry() {
+    if (this.entryForm.valid) {
+      const formValue = this.entryForm.value;
+      const entry: NewBudgetEntry = {
+        type: formValue['type'] as 'income' | 'expense',
+        category: formValue['category']!,
+        amount: Number(formValue['amount']),
+        description: formValue['description'] || '',
+        date: new Date(formValue['date']!),
+      };
+      this.addEntry(entry);
+      this.entryForm.reset({ type: 'expense', date: new Date().toISOString().split('T')[0] });
+    }
+  }
+
   ngOnInit() {
     this.loadBudget();
   }
@@ -49,7 +76,7 @@ export class Budgeting implements OnInit {
     });
   }
 
-  addEntry(entry: BudgetEntry) {
+  addEntry(entry: NewBudgetEntry) {
     this.dataService
       .addEntry('user123', this.currentMonth(), entry)
       .subscribe(() => this.loadBudget());
