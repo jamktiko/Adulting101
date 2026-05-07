@@ -242,27 +242,13 @@ app.post('/api/confirm', async (req, res) => {
   }
 });
 
-/*app.post('/api/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     const tokens = await loginUser(username, password);
     res.status(200).json(tokens);
   } catch (error) {
     res.status(401).json({ error: 'Kirjautumisvirhe' });
-  }
-});*/
-
-app.post('/api/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    console.log("Yritetään kirjautua käyttäjällä:", username);
-    const tokens = await loginUser(username, password);
-    res.status(200).json(tokens);
-  } catch (error) {
-    console.error("--- COGNITO VIRHE ---");
-    console.error("Nimi:", error.name); // Esim. NotAuthorizedException
-    console.error("Viesti:", error.message); // Esim. Incorrect username or password.
-    res.status(401).json({ error: error.name, message: error.message });
   }
 });
 
