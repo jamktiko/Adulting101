@@ -1,5 +1,4 @@
-import { Component, input, inject, output } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-post-it-note',
