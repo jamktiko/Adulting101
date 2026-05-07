@@ -67,22 +67,24 @@
       </div>
 
       <label>Väri:</label>
-      <select
-        [(ngModel)]="newNote.color"
-        style="
-          width: 100%;
-          padding: 8px;
-          margin-bottom: 16px;
-          border: 2px solid #9ca3af;
-          border-radius: 4px;
-        "
-      >
-        <option value="#fef08a">Keltainen</option>
-        <option value="#fbcfe8">Vaaleanpunainen</option>
-        <option value="#bfdbfe">Sininen</option>
-        <option value="#86efac">Vihreä</option>
-        <option value="#fdba74">Oranssi</option>
-      </select>
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px">
+        <input
+          type="color"
+          [(ngModel)]="newNote.color"
+          style="
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            border: 2px solid #9ca3af;
+            border-radius: 4px;
+            cursor: pointer;
+            background: none;
+          "
+        />
+        <span style="color: #4b5563; font-size: 14px; line-height: 1.2">
+          Valitse oma väri värikartasta klikkaamalla
+        </span>
+      </div>
 
       <button class="btn-post-it bg-green" style="width: 100%; padding: 12px" (click)="addNote()">
         Lisää ilmoitustaululle
@@ -133,17 +135,19 @@
         <div class="tape tape-center"></div>
 
         <button
+          class="btn-post-it"
           (click)="toggleEditMode()"
           style="
             position: absolute;
             top: 24px;
             right: 24px;
-            background: none;
+            background-color: rgba(255, 255, 255, 0.6);
             border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
             cursor: pointer;
-            color: #4b5563;
+            color: #1f2937;
             font-size: 14px;
-            text-decoration: underline;
           "
         >
           @if (isEditingNote) {
@@ -161,7 +165,7 @@
               margin-bottom: 24px;
               font-size: 28px;
               font-weight: bold;
-              color: #1f2937;
+              color: #000000;
               background: transparent;
               border: none;
               border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
@@ -183,13 +187,34 @@
               white-space: pre-wrap;
               text-align: left;
               font-size: 18px;
-              color: #374151;
+              color: #000000;
               line-height: 1.5;
               font-family: inherit;
             "
           ></textarea>
+
+          <label
+            class="btn-post-it"
+            style="
+              position: absolute;
+              bottom: 32px;
+              right: 32px;
+              padding: 4px 10px;
+              font-size: 12px;
+              background-color: rgba(255, 255, 255, 0.6);
+              cursor: pointer;
+              border-radius: 4px;
+            "
+          >
+            Vaihda väriä
+            <input
+              type="color"
+              [(ngModel)]="magnifiedNote.color"
+              style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none"
+            />
+          </label>
         } @else {
-          <h2 style="margin-top: 10px; margin-bottom: 24px; font-size: 28px; color: #1f2937">
+          <h2 style="margin-top: 10px; margin-bottom: 24px; font-size: 28px; color: #000000">
             {{ magnifiedNote.title }}
           </h2>
 
@@ -198,7 +223,7 @@
               white-space: pre-wrap;
               text-align: left;
               font-size: 18px;
-              color: #374151;
+              color: #000000;
               line-height: 1.5;
               min-height: 150px;
             "
