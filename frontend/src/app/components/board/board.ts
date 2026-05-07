@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CdkDrag, CdkDragMove, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { PostItNote } from '../post-it-note/post-it-note';
+import { Settings } from '../settings/settings';
 
 interface CustomNote {
   id: number;
@@ -38,7 +39,7 @@ function snap(x: number, y: number, maxX: number, maxY: number) {
 
 @Component({
   selector: 'app-board',
-  imports: [PostItNote, FormsModule, CdkDrag],
+  imports: [PostItNote, FormsModule, CdkDrag, Settings],
   templateUrl: './board.html',
   styleUrl: './board.css',
 })
@@ -46,6 +47,7 @@ export class Board implements AfterViewInit {
   @ViewChild('boardArea') boardRef!: ElementRef;
   private router = inject(Router);
 
+  showSettingsModal = false;
   showAddForm = false;
   newNote: Omit<CustomNote, 'position' | 'isDeletable'> = {
     id: 0,
@@ -237,8 +239,8 @@ export class Board implements AfterViewInit {
     this.isEditingNote = !this.isEditingNote;
   }
 
-  navigateToSettings() {
-    this.router.navigate(['/settings']);
+  toggleSettingsModal() {
+    this.showSettingsModal = !this.showSettingsModal;
   }
 
   navigateToLogin() {
