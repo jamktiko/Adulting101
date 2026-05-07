@@ -1,13 +1,160 @@
 <div class="board">
-  <!-- väliaikainen -->
-  <button (click)="navigateToLogin()">Kirjaudu</button>
-
-  <button (click)="navigateToSettings()">Asetukset</button>
-
-  <div class="note-grid">
-    <!-- Muistilaput eri väreillä ja otsikoilla, klikkauksella navigointi -->
-    <app-post-it-note title="Arkivinkit" color="#99fd81" route="/topics" />
-    <app-post-it-note title="Budjetti" color="#f8e85a" route="/budgeting" />
-    <app-post-it-note title="Viihde" color="#78c3ff" route="/entertainment" />
+  <!-- Yläpalkin navigaatiot ym. -->
+  <div class="top-controls">
+    <button (click)="navigateToLogin()">Kirjaudu</button>
+    <button (click)="navigateToSettings()">Asetukset</button>
+    <button (click)="toggleAddForm()">Uusi muistilappu</button>
   </div>
+
+  <!-- Poistamisen vahvistusikkuna -->
+  @if (noteToDelete !== null) {
+    <div class="modal-overlay">
+      <div class="post-it bg-yellow modal-post-it">
+        <div class="tape tape-center"></div>
+        <h3 style="margin-top: 5px; color: #1f2937">Vahvista poisto</h3>
+        <p style="color: #4b5563">
+          Haluatko varmasti poistaa tämän muistilapun? Tätä ei voi perua.
+        </p>
+        <div class="modal-actions">
+          <button
+            class="btn-post-it bg-pink"
+            style="padding: 10px 16px; font-size: 14px"
+            (click)="cancelDelete()"
+          >
+            Peruuta
+          </button>
+          <button
+            class="btn-post-it bg-green"
+            style="padding: 10px 16px; font-size: 14px"
+            (click)="confirmDelete()"
+          >
+            Poista
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showAddForm) {
+    <!-- Lomake uuden muistilapun lisäämiselle, visualisoitu lomake muistilappuna -->
+    <div class="post-it bg-pink add-note-form" style="width: 300px; margin: 20px auto; z-index: 10">
+      <div class="tape tape-center"></div>
+      <label>Otsikko:</label>
+      <div class="input-wrapper" style="margin-bottom: 12px">
+        <input
+          type="text"
+          [(ngModel)]="newNote.title"
+          placeholder="Anna otsikko..."
+          style="padding-left: 12px"
+        />
+      </div>
+
+      <label>Sisältö (teksti):</label>
+      <div class="input-wrapper" style="margin-bottom: 12px">
+        <textarea
+          [(ngModel)]="newNote.content"
+          placeholder="Mitä haluat muistaa?"
+          rows="3"
+          style="
+            width: 100%;
+            border: 2px solid #9ca3af;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: inherit;
+            box-sizing: border-box;
+          "
+        ></textarea>
+      </div>
+
+      <label>Väri:</label>
+      <select
+        [(ngModel)]="newNote.color"
+        style="
+          width: 100%;
+          padding: 8px;
+          margin-bottom: 16px;
+          border: 2px solid #9ca3af;
+          border-radius: 4px;
+        "
+      >
+        <option value="#fef08a">Keltainen</option>
+        <option value="#fbcfe8">Vaaleanpunainen</option>
+        <option value="#bfdbfe">Sininen</option>
+        <option value="#86efac">Vihreä</option>
+        <option value="#fdba74">Oranssi</option>
+      </select>
+
+      <button class="btn-post-it bg-green" style="width: 100%; padding: 12px" (click)="addNote()">
+        Lisää ilmoitustaululle
+      </button>
+    </div>
+  }
+
+  <div class="board-area" #boardArea>
+    <!-- Haamumuistilappu (näytetään vain kun jotain raahataan) -->
+    @if (ghostPosition !== null) {
+      <div
+        class="ghost-note"
+        [style.transform]="'translate3d(' + ghostPosition.x + 'px, ' + ghostPosition.y + 'px, 0)'"
+      ></div>
+    }
+
+    <!-- Kaikki muistilaput (Navigointi + Itse luodut) yhdessä -->
+    @for (note of customNotes; track note.id) {
+      <div
+        cdkDrag
+        [cdkDragFreeDragPosition]="note.position"
+        (cdkDragMoved)="onDragMove($event, note)"
+        (cdkDragEnded)="onDragEnd($event, note)"
+        class="draggable-note"
+        style="position: absolute; left: 0; top: 0"
+      >
+        <app-post-it-note
+          [title]="note.title"
+          [color]="note.color"
+          [route]="note.route"
+          [isDeletable]="note.isDeletable"
+          (deleteNote)="deleteCustomNote(note.id)"
+          (noteClick)="handleNoteClick(note)"
+        />
+      </div>
+    }
+  </div>
+
+  <!-- Suurennettu muistilappu overlay -->
+  @if (magnifiedNote !== null) {
+    <div class="modal-overlay" (click)="closeMagnifiedNote()">
+      <div
+        class="post-it modal-post-it"
+        [style.background-color]="magnifiedNote.color"
+        (click)="$event.stopPropagation()"
+        style="width: 400px; min-height: 300px; padding: 32px"
+      >
+        <div class="tape tape-center"></div>
+        <h2 style="margin-top: 10px; margin-bottom: 24px; font-size: 28px; color: #1f2937">
+          {{ magnifiedNote.title }}
+        </h2>
+
+        <p
+          style="
+            white-space: pre-wrap;
+            text-align: left;
+            font-size: 18px;
+            color: #374151;
+            line-height: 1.5;
+          "
+        >
+          {{ magnifiedNote.content }}
+        </p>
+
+        <button
+          class="btn-post-it"
+          style="margin-top: 32px; padding: 8px 16px; background-color: rgba(255, 255, 255, 0.6)"
+          (click)="closeMagnifiedNote()"
+        >
+          Sulje
+        </button>
+      </div>
+    </div>
+  }
 </div>

@@ -1,5 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { PostItNote } from '../post-it-note/post-it-note';
+
+interface TopicNote {
+  title: string;
+  color: string;
+  route: string;
+}
 
 @Component({
   selector: 'app-topic-library',
@@ -7,4 +14,15 @@ import { PostItNote } from '../post-it-note/post-it-note';
   templateUrl: './topic-library.html',
   styleUrl: './topic-library.css',
 })
-export class TopicLibrary {}
+export class TopicLibrary {
+  private router = inject(Router);
+
+  topicNotes: TopicNote[] = [
+    { title: 'Muutto', color: '#a183ff', route: '/topics/moving' },
+    { title: 'Siivous', color: '#fd82b6', route: '/topics/cleaning' },
+  ];
+
+  handleNoteClick(note: TopicNote) {
+    this.router.navigate([note.route]);
+  }
+}

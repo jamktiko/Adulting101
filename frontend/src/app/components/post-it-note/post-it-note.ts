@@ -1,5 +1,4 @@
-import { Component, input, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-post-it-note',
@@ -8,17 +7,24 @@ import { Router } from '@angular/router';
   styleUrl: './post-it-note.css',
 })
 export class PostItNote {
-  /* title, color ja route (navigointireitti) välitetään äitikomponentista (Board) 
-  lapsikomponenttiin (PostItNote) */
+  /* title, color ja route (navigointireitti) välitetään äitikomponentista */
   title = input.required<string>();
   color = input.required<string>();
-  route = input.required<string>();
+  route = input<string>();
+  content = input<string>();
+  isDeletable = input<boolean>(false);
 
-  // Injektoidaan Router navigointia varten
-  private router = inject(Router);
+  deleteNote = output<void>();
+  noteClick = output<void>();
 
-  // Navigointimetodi: siirrytään siihen komponenttiin, jota vastaavaa muistilappua klikataan etusivulla
-  navigate() {
-    this.router.navigate([this.route()]);
+  // Navigointimetodi on nyt siirretty äitikomponentin vastuulle raahauslogiikan takia.
+  // Emmitoidaan vain klikkaus.
+  onClick() {
+    this.noteClick.emit();
+  }
+
+  onDelete(event: Event) {
+    event.stopPropagation(); // Estää klikkauksen valumisen muistilapun navigointiin
+    this.deleteNote.emit();
   }
 }

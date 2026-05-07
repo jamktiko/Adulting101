@@ -3,6 +3,8 @@
   height: 150px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   display: flex;
+  flex-direction: column;
+  position: relative;
   align-items: center;
   justify-content: center;
   font-size: 18px;
@@ -10,6 +12,7 @@
   color: #333;
   cursor: pointer;
   transition: transform 0.2s; /* Hover-efekti */
+  text-align: center;
 }
 
 .post-it-note:hover {
@@ -18,4 +21,37 @@
 
 .post-it-note:focus {
   outline: 2px solid #007bff; /* Fokus-indikaattori saavutettavuutta varten */
+}
+
+/* Poistonapin tyylit */
+.delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(239, 68, 68, 0.8); /* red-500 läpinäkyvänä */
+  color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s;
+  z-index: 10;
+}
+
+.delete-btn:hover {
+  background-color: rgba(220, 38, 38, 1); /* red-600 */
+}
+
+/* Näytä poistonappi, kun muistilapun päällä leijutaan */
+.post-it-note:hover .delete-btn {
+  opacity: 1;
 }
