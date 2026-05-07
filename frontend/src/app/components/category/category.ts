@@ -1,10 +1,10 @@
 import { Component, inject, signal, effect } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
 
 @Component({
   selector: 'app-category',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './category.html',
   styleUrl: './category.css',
 })
