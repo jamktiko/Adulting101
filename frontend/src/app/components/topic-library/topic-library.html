@@ -3,6 +3,12 @@
 </div>
 <div class="note-grid">
   <!-- Muistilaput eri väreillä ja otsikoilla, klikkauksella navigointi eri kategorioihin -->
-  <app-post-it-note title="Muutto" color="#a183ff" route="/topics/moving" />
-  <app-post-it-note title="Siivous" color="#fd82b6" route="/topics/cleaning" />
+  @for (note of topicNotes; track $index) {
+    <app-post-it-note
+      [title]="note.title"
+      [color]="note.color"
+      [route]="note.route"
+      (noteClick)="handleNoteClick(note)"
+    />
+  }
 </div>
