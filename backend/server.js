@@ -5,17 +5,12 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const { signUpUser, confirmUser, loginUser } = require('./utils/cognito');
 
-// --- TARKISTUKSET ---
-console.log(
-  'TARKISTUS: MONGODB_URI on:',
-  process.env.MONGODB_URI ? 'Löytyi!' : 'TYHJÄ (undefined)',
-);
-
 // --- MALLIEN TUONTI ---
 const User = require('./models/User');
 const Budget = require('./models/Budget');
 const Entertainment = require('./models/Entertainment');
-const MoveItem = require('./models/MoveItem'); // Uusi Master-lista malli
+const MoveItem = require('./models/MoveItem');
+const CleanItem = require('./models/CleanItem');
 
 const app = express();
 
@@ -30,15 +25,30 @@ mongoose
   .then(() => console.log('✅ Yhteys MongoDB-pilveen ok!'))
   .catch((error) => console.error('❌ Yhteysvirhe:', error.message));
 
+// --- APUFUNKTIOT ---
+function shouldResetWeekly(lastResetDate) {
+  if (!lastResetDate) return true;
+  const now = new Date();
+  const lastReset = new Date(lastResetDate);
+  
+  const getWeek = (date) => {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  };
+
+  return getWeek(now) !== getWeek(lastReset) || now.getFullYear() !== lastReset.getFullYear();
+}
+
 // --- REITIT (ROUTES) ---
 
 app.get('/', (req, res) => {
   res.send('Paljon onnea kaikille syntymäpäiväsankareille! 🎉');
 });
 
-// --- 1. KÄYTTÄJÄT JA CHECKLISTIT ---
+// --- 1. KÄYTTÄJÄT JA LISTAT ---
 
-// Hae kaikki käyttäjät (hallintaa varten)
+// Hae kaikki käyttäjät
 app.get('/api/users', async (req, res) => {
   try {
     const users = await User.find();
@@ -48,56 +58,21 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Hae yksittäisen käyttäjän tiedot (sisältäen siivouslistan)
-app.get('/api/users/:userId', async (req, res) => {
-  try {
-    const user = await User.findOne({ _id: req.params.userId });
-    if (!user) return res.status(404).json({ error: 'Käyttäjää ei löydy' });
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Siivouslistan päivitys (käyttäjäkohtainen lista)
-app.patch('/api/users/:userId/cleaning-checklist', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { itemIndex, statusValue } = req.body;
-
-    const updatePath = `cleaning_checklist.${itemIndex}.done`;
-
-    await User.findOneAndUpdate(
-      { _id: userId },
-      { $set: { [updatePath]: statusValue } }
-    );
-
-    res.json({ message: 'Siivouslista päivitetty' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// --- MUUTTOLISTA (MASTER-LISTA LOGIIKKA) ---
-
-// Hae yhdistetty muuttolista (kaikki tavarat + käyttäjän hankinnat)
+// --- MUUTTOLISTA ---
 app.get('/api/users/:userId/move-checklist', async (req, res) => {
   try {
     const { userId } = req.params;
-    const allItems = await MoveItem.find(); // Haetaan kaikki tavarat master-kannasta
+    const allItems = await MoveItem.find();
     const user = await User.findOne({ _id: userId });
     
     if (!user) return res.status(404).json({ error: 'Käyttäjää ei löytynyt' });
 
-    const response = allItems.map(item => {
-      return {
-        _id: item._id,
-        name: item.name,
-        category: item.category,
-        // Tarkistetaan löytyykö tavaran ID käyttäjän listalta
-        purchased: user.purchased_items ? user.purchased_items.includes(item._id) : false
-      };
-    });
+    const response = allItems.map(item => ({
+      _id: item._id,
+      name: item.name,
+      category: item.category,
+      purchased: user.purchased_items ? user.purchased_items.includes(item._id) : false
+    }));
 
     res.json(response);
   } catch (err) {
@@ -105,35 +80,66 @@ app.get('/api/users/:userId/move-checklist', async (req, res) => {
   }
 });
 
-// Muuttolistan tavaran tilan vaihtaminen (Checkbox klikkaus)
 app.patch('/api/users/:userId/toggle-move-item', async (req, res) => {
   try {
     const { userId } = req.params;
     const { itemId, isPurchased } = req.body;
 
-    // Jos isPurchased on true, lisätään ID listaan. Jos false, poistetaan.
     const update = isPurchased 
       ? { $addToSet: { purchased_items: itemId } } 
       : { $pull: { purchased_items: itemId } };
 
     await User.updateOne({ _id: userId }, update);
-    res.json({ message: 'Tavaran tila päivitetty' });
+    res.json({ message: 'Muuttolista päivitetty' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// --- 2. BUDJETTI (TALOUS) ---
-
-app.post('/api/budgets', async (req, res) => {
+// --- VIIKKOSIIVOUS ---
+app.get('/api/users/:userId/cleaning-checklist', async (req, res) => {
   try {
-    const newEntry = new Budget(req.body);
-    const savedEntry = await newEntry.save();
-    res.status(201).json(savedEntry);
+    const { userId } = req.params;
+    const allTasks = await CleanItem.find();
+    let user = await User.findOne({ _id: userId });
+
+    if (!user) return res.status(404).json({ error: 'Käyttäjää ei löydy' });
+
+    if (shouldResetWeekly(user.last_reset)) {
+      user.completed_cleaning_tasks = [];
+      user.last_reset = new Date();
+      await user.save();
+    }
+
+    const response = allTasks.map(task => ({
+      _id: task._id,
+      name: task.name,
+      done: user.completed_cleaning_tasks ? user.completed_cleaning_tasks.includes(task._id) : false
+    }));
+
+    res.json(response);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
+
+app.patch('/api/users/:userId/toggle-cleaning-task', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { taskId, isDone } = req.body;
+
+    const update = isDone 
+      ? { $addToSet: { completed_cleaning_tasks: taskId } } 
+      : { $pull: { completed_cleaning_tasks: taskId } };
+
+    await User.updateOne({ _id: userId }, update);
+    res.json({ message: 'Siivoustehtävä päivitetty' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- 2. BUDJETTI ---
 
 app.get('/api/budgets', async (req, res) => {
   try {
@@ -153,6 +159,16 @@ app.get('/api/budgets/:userId', async (req, res) => {
   }
 });
 
+app.post('/api/budgets', async (req, res) => {
+  try {
+    const newEntry = new Budget(req.body);
+    const savedEntry = await newEntry.save();
+    res.status(201).json(savedEntry);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 app.delete('/api/budgets/:id', async (req, res) => {
   try {
     await Budget.findByIdAndDelete(req.params.id);
@@ -162,19 +178,8 @@ app.delete('/api/budgets/:id', async (req, res) => {
   }
 });
 
-// --- 3. VIIHDE (ENTERTAINMENT) ---
+// --- 3. VIIHDE ---
 
-app.post('/api/entertainment', async (req, res) => {
-  try {
-    const newItem = new Entertainment(req.body);
-    const savedItem = await newItem.save();
-    res.status(201).json(savedItem);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// Hae KAIKKI viihdekohteet
 app.get('/api/entertainment', async (req, res) => {
   try {
     const items = await Entertainment.find();
@@ -193,7 +198,17 @@ app.get('/api/entertainment/:userId', async (req, res) => {
   }
 });
 
-// --- 4. AUTENTIKOINTI (COGNITO) ---
+app.post('/api/entertainment', async (req, res) => {
+  try {
+    const newItem = new Entertainment(req.body);
+    const savedItem = await newItem.save();
+    res.status(201).json(savedItem);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// --- 4. AUTENTIKOINTI ---
 
 app.post('/api/signup', async (req, res) => {
   try {
@@ -202,15 +217,12 @@ app.post('/api/signup', async (req, res) => {
 
     const newUser = new User({
       _id: cognitoResult.UserSub,
-      username: username,
-      email: email,
+      username,
+      email,
       password: 'COGNITO_HANDLES_THIS',
-      cleaning_checklist: [
-          { task: "Imurointi", done: false },
-          { task: "Tiskien pesu", done: false },
-          { task: "Pölyjen pyyhintä", done: false }
-      ],
-      purchased_items: [] // Alustetaan tyhjä lista hankinnoille
+      purchased_items: [],
+      completed_cleaning_tasks: [],
+      last_reset: new Date()
     });
     await newUser.save();
 
@@ -240,8 +252,5 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// --- SERVERIN KÄYNNISTYS ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Serveri pyörii portissa ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Serveri pyörii portissa ${PORT}`));

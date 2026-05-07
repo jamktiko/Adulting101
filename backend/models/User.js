@@ -1,31 +1,33 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    // Määritellään, että _id on merkkijono (String), jotta voimme käyttää omia ID-arvoja (esim. Cognitosta)
+    // Käytetään merkkijonoa, jotta ID voi olla esim. Cognitosta tuleva UUID
     _id: { type: String, required: true },
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
     
-    // 1. SIIVOUSLISTA (Pysyy ennallaan, jos haluatte pitää sen käyttäjäkohtaisena)
-    cleaning_checklist: [
-        {
-            task: { type: String },
-            done: { type: Boolean, default: false }
-        }
-    ],
-
-    // 2. MUUTTOLISTA (Päivitetty uusi malli)
-    // Tallennetaan vain taulukko MoveItem-dokumenttien _id-arvoja (esim. ["item_001", "item_002"])
+    // 1. MUUTTOLISTA (Pysyvät hankinnat)
+    // Tallennetaan vain ID:t, esim. ["item_001", "item_005"]
     purchased_items: {
         type: [String],
         default: []
     },
+
+    // 2. VIIKKOSIIVOUS (Viikoittain nollautuva)
+    // Tallennetaan vain suoritettujen tehtävien ID:t, esim. ["task_001"]
+    completed_cleaning_tasks: {
+        type: [String],
+        default: []
+    },
     
-    // Viikoittainen nollaus (siivouslistaa varten, jos otatte sen myöhemmin käyttöön)
-    last_reset: { type: Date, default: Date.now },
+    // Pidetään kirjaa, milloin lista on viimeksi nollattu
+    last_reset: { 
+        type: Date, 
+        default: Date.now 
+    },
     
     createdAt: { type: Date, default: Date.now }
-});
+}, { versionKey: false });
 
 module.exports = mongoose.model('users', userSchema);
