@@ -1,10 +1,15 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-settings',
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
-export class Settings {}
+export class Settings {
+  @Output() closeSettings = new EventEmitter<void>();
+
+  close() {
+    this.closeSettings.emit();
+  }
+}
