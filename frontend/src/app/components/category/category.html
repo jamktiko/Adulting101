@@ -6,7 +6,11 @@
     <h2>{{ category() }}</h2>
     <div class="items">
       @for (item of content(); track item.id) {
-        <div class="item">
+        <div
+          class="item"
+          [style.background-color]="categoryColor()"
+          [style.border]="'2px solid ' + categoryBorderColor()"
+        >
           <h3>{{ item.title }}</h3>
           <ul>
             @for (line of item.items || item.content; track line) {

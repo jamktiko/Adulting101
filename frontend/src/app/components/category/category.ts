@@ -15,6 +15,8 @@ export class Category {
   category = this.dataService.categoryTitle;
   content = signal<any>(null);
   loading = signal(false);
+  categoryColor = signal<string>('#fef08a'); // default yellow
+  categoryBorderColor = signal<string>('#fde047'); // default yellow border
 
   constructor() {
     // effect suoritetaan aina kun joku sen "seuraama" signaali muuttuu
@@ -23,6 +25,14 @@ export class Category {
       const categoryParam = this.route.snapshot.paramMap.get('category');
 
       if (!categoryParam) return;
+
+      if (categoryParam === 'moving') {
+        this.categoryColor.set('#a183ff');
+        this.categoryBorderColor.set('#8966ff');
+      } else if (categoryParam === 'cleaning') {
+        this.categoryColor.set('#fd82b6');
+        this.categoryBorderColor.set('#f965a3');
+      }
 
       this.loading.set(true);
 

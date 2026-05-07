@@ -85,6 +85,7 @@ export class Board implements AfterViewInit {
   noteIdCounter = 1;
   noteToDelete: number | null = null;
   magnifiedNote: CustomNote | null = null;
+  isEditingNote = false;
 
   isDragging = false;
   ghostPosition: { x: number; y: number } | null = null;
@@ -229,6 +230,11 @@ export class Board implements AfterViewInit {
 
   closeMagnifiedNote() {
     this.magnifiedNote = null;
+    this.isEditingNote = false;
+  }
+
+  toggleEditMode() {
+    this.isEditingNote = !this.isEditingNote;
   }
 
   navigateToSettings() {

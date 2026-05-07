@@ -22,3 +22,57 @@
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
 }
+
+.category h2 {
+  font-size: 2rem;
+  margin-bottom: 24px;
+  color: #1f2937;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.item {
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.item h3 {
+  background-color: #fef08a;
+  border: 2px solid #fde047;
+  padding: 6px 12px;
+  border-radius: 3px;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.item ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.item li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+  color: #000000;
+}
+
+.item li::before {
+  content: '•';
+  position: absolute;
+  left: 8px;
+  color: #000000;
+  font-size: 1.2rem;
+}
