@@ -21,8 +21,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     // HttpClient otetaan käyttöön koko sovellukseen
     provideHttpClient(),
-    // InMemoryDataService eli valetietokanta otetaan käyttöön koko sovellukseen
-    // Tämä rivi poistetaan sitten, kun ryhdytään käyttämään oikeaa palvelinta.
-    importProvidersFrom(InMemoryWebApiModule.forRoot(InMemoryDataService, { delay: 500 })),
+    // Tarkistathan, että passThruUnknownUrl on true, niin oikeat API-kutsut menevät läpi!
+    importProvidersFrom(InMemoryWebApiModule.forRoot(InMemoryDataService, { delay: 500, passThruUnknownUrl: true })),
   ],
 };
