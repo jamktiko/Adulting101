@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { PostItNote } from '../post-it-note/post-it-note';
+import { RouterLink } from '@angular/router';
 
 interface TopicNote {
   title: string;
@@ -10,7 +11,7 @@ interface TopicNote {
 
 @Component({
   selector: 'app-topic-library',
-  imports: [PostItNote],
+  imports: [PostItNote, RouterLink],
   templateUrl: './topic-library.html',
   styleUrl: './topic-library.css',
 })

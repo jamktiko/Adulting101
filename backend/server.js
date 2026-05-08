@@ -30,17 +30,14 @@ function shouldResetWeekly(lastResetDate) {
   if (!lastResetDate) return true;
   const now = new Date();
   const lastReset = new Date(lastResetDate);
-
+  
   const getWeek = (date) => {
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
     const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
     return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
   };
 
-  return (
-    getWeek(now) !== getWeek(lastReset) ||
-    now.getFullYear() !== lastReset.getFullYear()
-  );
+  return getWeek(now) !== getWeek(lastReset) || now.getFullYear() !== lastReset.getFullYear();
 }
 
 // --- REITIT (ROUTES) ---
@@ -70,13 +67,11 @@ app.get('/api/users/:userId/move-checklist', async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'Käyttäjää ei löytynyt' });
 
-    const response = allItems.map((item) => ({
+    const response = allItems.map(item => ({
       _id: item._id,
       name: item.name,
       category: item.category,
-      purchased: user.purchased_items
-        ? user.purchased_items.includes(item._id)
-        : false,
+      purchased: user.purchased_items ? user.purchased_items.includes(item._id) : false
     }));
 
     res.json(response);
@@ -90,8 +85,8 @@ app.patch('/api/users/:userId/toggle-move-item', async (req, res) => {
     const { userId } = req.params;
     const { itemId, isPurchased } = req.body;
 
-    const update = isPurchased
-      ? { $addToSet: { purchased_items: itemId } }
+    const update = isPurchased 
+      ? { $addToSet: { purchased_items: itemId } } 
       : { $pull: { purchased_items: itemId } };
 
     await User.updateOne({ _id: userId }, update);
@@ -116,12 +111,10 @@ app.get('/api/users/:userId/cleaning-checklist', async (req, res) => {
       await user.save();
     }
 
-    const response = allTasks.map((task) => ({
+    const response = allTasks.map(task => ({
       _id: task._id,
       name: task.name,
-      done: user.completed_cleaning_tasks
-        ? user.completed_cleaning_tasks.includes(task._id)
-        : false,
+      done: user.completed_cleaning_tasks ? user.completed_cleaning_tasks.includes(task._id) : false
     }));
 
     res.json(response);
@@ -135,8 +128,8 @@ app.patch('/api/users/:userId/toggle-cleaning-task', async (req, res) => {
     const { userId } = req.params;
     const { taskId, isDone } = req.body;
 
-    const update = isDone
-      ? { $addToSet: { completed_cleaning_tasks: taskId } }
+    const update = isDone 
+      ? { $addToSet: { completed_cleaning_tasks: taskId } } 
       : { $pull: { completed_cleaning_tasks: taskId } };
 
     await User.updateOne({ _id: userId }, update);
@@ -185,7 +178,7 @@ app.delete('/api/budgets/:id', async (req, res) => {
   }
 });
 
-// Ainon lisäämät koodit
+// Ainon lisäämät koodit (vain budjettiin liittyvät)
 // Hae käyttäjän budjetti tietylle kuukaudelle
 app.get('/api/budgets/:userId/:month', async (req, res) => {
   try {
@@ -287,7 +280,7 @@ app.post('/api/signup', async (req, res) => {
       password: 'COGNITO_HANDLES_THIS',
       purchased_items: [],
       completed_cleaning_tasks: [],
-      last_reset: new Date(),
+      last_reset: new Date()
     });
     await newUser.save();
 

@@ -1,8 +1,16 @@
-import { Component, inject, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  ViewChild,
+  ElementRef,
+  HostListener,
+  AfterViewInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CdkDrag, CdkDragMove, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { PostItNote } from '../post-it-note/post-it-note';
+import { Settings } from '../settings/settings';
 
 interface CustomNote {
   id: number;
@@ -31,14 +39,15 @@ function snap(x: number, y: number, maxX: number, maxY: number) {
 
 @Component({
   selector: 'app-board',
-  imports: [PostItNote, FormsModule, CdkDrag],
+  imports: [PostItNote, FormsModule, CdkDrag, Settings],
   templateUrl: './board.html',
   styleUrl: './board.css',
 })
-export class Board {
+export class Board implements AfterViewInit {
   @ViewChild('boardArea') boardRef!: ElementRef;
   private router = inject(Router);
 
+  showSettingsModal = false;
   showAddForm = false;
   newNote: Omit<CustomNote, 'position' | 'isDeletable'> = {
     id: 0,
@@ -78,9 +87,77 @@ export class Board {
   noteIdCounter = 1;
   noteToDelete: number | null = null;
   magnifiedNote: CustomNote | null = null;
+  isEditingNote = false;
 
   isDragging = false;
   ghostPosition: { x: number; y: number } | null = null;
+
+  ngAfterViewInit() {
+    // Varmistetaan minimaalisella viiveellä että DOM ja elementtien koot on laskettu
+    setTimeout(() => {
+      this.ensureNotesInBounds();
+    });
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.ensureNotesInBounds();
+  }
+
+  ensureNotesInBounds() {
+    if (!this.boardRef) return;
+    const rect = this.boardRef.nativeElement.getBoundingClientRect();
+
+    // Suojakerroin: ei päivitetä jos alue ei ole vielä kunnolla ruudulla
+    if (rect.width === 0 || rect.height === 0) return;
+
+    // Järjestetään laput ensisijaisesti x-koordinaatin mukaan
+    const sortedNotes = [...this.customNotes].sort(
+      (a, b) => a.position.x - b.position.x || a.position.y - b.position.y,
+    );
+    const placed: { x: number; y: number }[] = [];
+
+    const isOverlapping = (p1: { x: number; y: number }, p2: { x: number; y: number }) => {
+      // Tarkistetaan menevätkö 150x150 laatikot päällekkäin
+      return !(
+        p1.x + NOTE_WIDTH + 8 <= p2.x ||
+        p2.x + NOTE_WIDTH + 8 <= p1.x ||
+        p1.y + NOTE_HEIGHT + 8 <= p2.y ||
+        p2.y + NOTE_HEIGHT + 8 <= p1.y
+      );
+    };
+
+    sortedNotes.forEach((note) => {
+      let newPos = snap(note.position.x, note.position.y, rect.width, rect.height);
+
+      let overlap = true;
+      let failsafe = 0;
+
+      // Haetaan ensimmäinen vapaa paikka alaspäin
+      while (overlap && failsafe < 200) {
+        overlap = placed.some((p) => isOverlapping(newPos, p));
+        if (overlap) {
+          newPos.y += GRID_SIZE; // Siirretään ruudukon verran alaspäin
+          if (newPos.y + NOTE_HEIGHT > rect.height - PADDING) {
+            newPos.y = PADDING; // Aloitetaan ylhäältä
+            newPos.x += GRID_SIZE * 2; // Siirrytään hieman oikealle
+            if (newPos.x + NOTE_WIDTH > rect.width - PADDING) {
+              // Taulu ei enää riitä estämään limitystä, pakotetaan pysäytys
+              break;
+            }
+          }
+        }
+        failsafe++;
+      }
+
+      placed.push({ ...newPos });
+
+      // Päivitetään cdkDragille uusi sijainti vain jos se muuttui
+      if (newPos.x !== note.position.x || newPos.y !== note.position.y) {
+        note.position = newPos;
+      }
+    });
+  }
 
   toggleAddForm() {
     this.showAddForm = !this.showAddForm;
@@ -155,10 +232,15 @@ export class Board {
 
   closeMagnifiedNote() {
     this.magnifiedNote = null;
+    this.isEditingNote = false;
   }
 
-  navigateToSettings() {
-    this.router.navigate(['/settings']);
+  toggleEditMode() {
+    this.isEditingNote = !this.isEditingNote;
+  }
+
+  toggleSettingsModal() {
+    this.showSettingsModal = !this.showSettingsModal;
   }
 
   navigateToLogin() {
