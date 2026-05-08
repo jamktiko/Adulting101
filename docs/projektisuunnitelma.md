@@ -63,8 +63,8 @@ _Kirjaa tähän lukuun aikataulu. Millä tavoin projekti viedään läpi. Voitte
 | Tuotanto | 04.05.2026 | Projektin edistämistä, UI/UX, frontend |
 | Tuotanto | 05.05.2026 | Itsenäistä työskentelyä omilla vastuualueilla |
 | Tuotanto | 06.05.2026 | UI/UX edistämistä, frontend, tietokannan muokkaus |
-| Tuotanto | 07.05.2026 | ........................................................ |
-| Tuotanto | 08.05.2026 | ........................................................ |
+| Tuotanto | 07.05.2026 | Ongelmanratkaisua |
+| Tuotanto | 08.05.2026 | Ongelmanratkaisua |
 
 | Viimeistely | 11.05.2026 | ..................................................... |
 | Viimeistely | 12.05.2026 | ..................................................... |
