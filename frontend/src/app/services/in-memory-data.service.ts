@@ -77,6 +77,18 @@ export class InMemoryDataService implements InMemoryDbService {
       },
     ];
 
-    return { muutto, siivous };
+    const talous: Guide[] = [
+      {
+        id: 'talous-001',
+        content: [
+          'Seuraa tulojasi ja menojasi säännöllisesti',
+          'Siirrä edes pieni summa säästöön joka kuukausi',
+          'Jos et pysty maksamaan laskua, ota yhteyttä laskuttajaan ja sovi maksusuunnitelma',
+          'Älä ota lainaa, jos et ole varma takaisinmaksukyvystäsi',
+        ],
+      },
+    ];
+
+    return { muutto, siivous, talous };
   }
 }

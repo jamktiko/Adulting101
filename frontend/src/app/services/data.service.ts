@@ -11,6 +11,7 @@ export class DataService {
   // Valepalvelimen eli in-memory-web-apin osoitteet. Täältä data tulee.
   private apiurlMoving = 'api/muutto';
   private apiurlCleaning = 'api/siivous';
+  private apiurlFinances = 'api/talous';
 
   private http = inject(HttpClient);
 
@@ -24,6 +25,9 @@ export class DataService {
       case 'cleaning':
         this.categoryTitle.set('Siivous');
         return this.http.get<Guide[]>(this.apiurlCleaning);
+      case 'finances':
+        this.categoryTitle.set('Taloudenhallinta');
+        return this.http.get<Guide[]>(this.apiurlFinances);
       default:
         throw new Error('Datan hakeminen epäonnistui: tuntematon kategoria');
     }

@@ -11,7 +11,9 @@
           [style.background-color]="categoryColor()"
           [style.border]="'2px solid ' + categoryBorderColor()"
         >
-          <h3>{{ item.title }}</h3>
+          @if (item.title) {
+            <h3>{{ item.title }}</h3>
+          }
           <ul>
             @for (line of item.items || item.content; track line) {
               <li>{{ line }}</li>

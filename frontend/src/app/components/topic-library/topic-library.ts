@@ -21,6 +21,7 @@ export class TopicLibrary {
   topicNotes: TopicNote[] = [
     { title: 'Muutto', color: '#a183ff', route: '/topics/moving' },
     { title: 'Siivous', color: '#fd82b6', route: '/topics/cleaning' },
+    { title: 'Talouden-hallinta', color: '#ff9d5c', route: '/topics/finances' },
   ];
 
   handleNoteClick(note: TopicNote) {

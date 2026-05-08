@@ -23,6 +23,10 @@
   outline: 2px solid #007bff; /* Fokus-indikaattori saavutettavuutta varten */
 }
 
+.post-it-note h3 {
+  max-width: 130px;
+}
+
 /* Poistonapin tyylit */
 .delete-btn {
   position: absolute;

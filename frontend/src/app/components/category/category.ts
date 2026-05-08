@@ -32,6 +32,9 @@ export class Category {
       } else if (categoryParam === 'cleaning') {
         this.categoryColor.set('#fd82b6');
         this.categoryBorderColor.set('#f965a3');
+      } else if (categoryParam === 'finances') {
+        this.categoryColor.set('#ff9d5c');
+        this.categoryBorderColor.set('#ff8738');
       }
 
       this.loading.set(true);
