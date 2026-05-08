@@ -228,7 +228,8 @@ app.post('/api/signup', async (req, res) => {
 
     res.status(200).json({ message: 'Rekisteröityminen onnistui.' });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Signup virhe:", error);
+    res.status(400).json({ error: error.message || 'Rekisteröitymisvirhe' });
   }
 });
 
