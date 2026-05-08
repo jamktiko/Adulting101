@@ -1,6 +1,5 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, from } from 'rxjs';
 
 // Luodaan interfacen kirjautumisen palauttamille tokeneille
 export interface LoginResponse {
@@ -17,18 +16,44 @@ export interface GenericResponse {
   providedIn: 'root',
 })
 export class Auth {
-  private http = inject(HttpClient);
   private apiUrl = 'https://375jfhty7h.execute-api.eu-north-1.amazonaws.com/api';
 
   signup(username: string, email: string, password: string): Observable<GenericResponse> {
-    return this.http.post<GenericResponse>(`${this.apiUrl}/signup`, { username, email, password });
+    return from(
+      fetch(`${this.apiUrl}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password }),
+      }).then((res) => {
+        if (!res.ok) return res.json().then((err) => Promise.reject(err));
+        return res.json();
+      }),
+    );
   }
 
   confirm(username: string, code: string): Observable<GenericResponse> {
-    return this.http.post<GenericResponse>(`${this.apiUrl}/confirm`, { username, code });
+    return from(
+      fetch(`${this.apiUrl}/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, code }),
+      }).then((res) => {
+        if (!res.ok) return res.json().then((err) => Promise.reject(err));
+        return res.json();
+      }),
+    );
   }
 
   login(username: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password });
+    return from(
+      fetch(`${this.apiUrl}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      }).then((res) => {
+        if (!res.ok) return res.json().then((err) => Promise.reject({ error: err })); // format as {error: err} to match component expectations
+        return res.json();
+      }),
+    );
   }
 }
