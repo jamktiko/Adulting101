@@ -25,6 +25,11 @@ mongoose
   .then(() => console.log('✅ Yhteys MongoDB-pilveen ok!'))
   .catch((error) => console.error('❌ Yhteysvirhe:', error.message));
 
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+  });
+
 // --- APUFUNKTIOT ---
 function shouldResetWeekly(lastResetDate) {
   if (!lastResetDate) return true;
