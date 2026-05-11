@@ -16,7 +16,7 @@ export interface GenericResponse {
   providedIn: 'root',
 })
 export class Auth {
-  private apiUrl = 'https://375jfhty7h.execute-api.eu-north-1.amazonaws.com';
+  private apiUrl = 'https://375jfhty7h.execute-api.eu-north-1.amazonaws.com/api';
 
   signup(username: string, email: string, password: string): Observable<GenericResponse> {
     return from(
