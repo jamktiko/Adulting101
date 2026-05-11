@@ -3,7 +3,16 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { signUpUser, confirmUser, loginUser } = require('./utils/cognito');
+const authCheck = require('./middleware/authCheck');
+const { 
+  validateBudgetEntry, 
+  validateRecurringEntry, 
+  handleValidationErrors 
+} = require('./middleware/validators');
+const sanitize = require('./utils/sanitizer');
 
 // --- MALLIEN TUONTI ---
 const User = require('./models/User');
@@ -18,6 +27,18 @@ const app = express();
 // --- MIDDLEWARE ---
 app.use(cors());
 app.use(express.json());
+
+// Tietoturvaa varten (https://www.npmjs.com/package/helmet)
+app.use(helmet());
+
+// Tietoturvaa varten (https://www.npmjs.com/package/express-rate-limit)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuuttia
+  max: 100, // max 100 requestia per IP
+  message: 'Liian monta pyyntöä, yritä myöhemmin uudelleen'
+});
+
+app.use('/api/', limiter);
 
 // --- TIETOKANTAYHTEYS ---
 const uri = process.env.MONGODB_URI;
@@ -184,7 +205,7 @@ app.delete('/api/budgets/:id', async (req, res) => {
   }
 });
 
-// Ainon lisäämät koodit (vain budjettiin liittyvät)
+// Ainon lisäämät koodit (budjettiin liittyvät)
 // Hae käyttäjän budjetti tietylle kuukaudelle
 app.get('/api/budgets/:userId/:month', async (req, res) => {
   try {
@@ -224,7 +245,10 @@ app.patch('/api/budgets/:userId/:month/limit', async (req, res) => {
 });
 
 // Lisää tulo tai meno
-app.post('/api/budgets/:userId/:month/entry', async (req, res) => {
+app.post('/api/budgets/:userId/:month/entry', 
+  validateBudgetEntry, 
+  handleValidationErrors, 
+  async (req, res) => {
   try {
     const entry = req.body;
     const budget = await Budget.findOneAndUpdate(
@@ -239,7 +263,10 @@ app.post('/api/budgets/:userId/:month/entry', async (req, res) => {
 });
 
 // Lisää uusi toistuva budjettimerkintä
-app.post('/api/recurring/:userId', async (req, res) => {
+app.post('/api/recurring/:userId', 
+  validateRecurringEntry, 
+  handleValidationErrors, 
+  async (req, res) => {
   try {
     const newRecurring = new RecurringEntry({
       ...req.body,

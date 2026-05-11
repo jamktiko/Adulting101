@@ -1,6 +1,13 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { BudgetEntry } from '../../models/budget-entry';
@@ -45,14 +52,26 @@ export class Budgeting implements OnInit {
   entryForm = this.fb.group({
     mode: ['single', Validators.required],
     type: ['expense', Validators.required],
-    category: ['', Validators.required],
-    amount: [0, [Validators.required, Validators.min(0.01)]],
-    description: [''],
+    category: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(1),
+        Validators.maxLength(50),
+        this.noSpecialChars.bind(this),
+      ],
+    ],
+    amount: [0, [Validators.required, Validators.min(0.01), Validators.max(999999.99)]],
+    description: ['', Validators.maxLength(250)],
     date: [new Date().toISOString().split('T')[0], Validators.required],
-    frequency: ['monthly'],
-    // startDate: [new Date().toISOString().split('T')[0]],
-    // endDate: [''],
+    frequency: ['monthly', Validators.required],
   });
+
+  noSpecialChars(control: AbstractControl): ValidationErrors | null {
+    // Salli vain kirjaimet, numerot, välilyönnit ja yhdysviivat
+    const regex = /^[a-zA-Z0-9\sä-ö-]*$/;
+    return regex.test(control.value) ? null : { specialChars: true };
+  }
 
   submitEntry() {
     if (!this.entryForm.valid) return;
@@ -75,8 +94,6 @@ export class Budgeting implements OnInit {
         amount: Number(formValue.amount),
         description: formValue.description || '',
         frequency: formValue.frequency as 'monthly' | 'weekly',
-        // startDate: formValue.startDate,
-        // endDate: formValue.endDate || undefined,
       };
       this.addRecurringEntry(recurring);
     }
@@ -89,8 +106,6 @@ export class Budgeting implements OnInit {
       description: '',
       date: new Date().toISOString().split('T')[0],
       frequency: 'monthly',
-      // startDate: new Date().toISOString().split('T')[0],
-      // endDate: '',
     });
   }
 

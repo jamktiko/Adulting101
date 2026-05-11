@@ -82,11 +82,17 @@
           type="text"
           formControlName="category"
           placeholder="esim. Ruoka, Polttoaine"
+          maxlength="50"
         />
         @if (
           entryForm.get('category')?.hasError('required') && entryForm.get('category')?.touched
         ) {
           <span class="error">Kategoria vaaditaan</span>
+        }
+        @if (entryForm.get('category')?.hasError('specialChars')) {
+          <span class="error"
+            >Sallittuja merkkejä ovat kirjaimet, numerot, välilyönnit ja yhdysviivat</span
+          >
         }
       </div>
 
@@ -100,6 +106,9 @@
         @if (entryForm.get('amount')?.hasError('min') && entryForm.get('amount')?.touched) {
           <span class="error">Summa täytyy olla positiivinen</span>
         }
+        @if (entryForm.get('amount')?.hasError('max')) {
+          <span class="error">Summa voi olla korkeintaan 999 999.99 €</span>
+        }
       </div>
 
       <!-- Kuvaus -->
@@ -110,6 +119,7 @@
           formControlName="description"
           placeholder="Lisätietoja (valinnainen)"
           rows="3"
+          maxlength="250"
         ></textarea>
       </div>
 
