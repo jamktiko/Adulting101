@@ -37,6 +37,13 @@
   <!-- Merkintöjen lista -->
   <div class="entries">
     <h3>Merkinnät</h3>
+    @for (entry of recurringEntries(); track entry._id) {
+      <div class="recurring-entry">
+        <span>{{ entry.category }}, ({{ entry.frequency }})</span>
+        <span>{{ entry.amount }} €</span>
+        <button (click)="deleteRecurringEntry(entry._id)">Poista</button>
+      </div>
+    }
     @for (entry of entries(); track entry._id) {
       <div class="entry" [class.income]="entry.type === 'income'">
         <span>{{ entry.category }}</span>
@@ -50,6 +57,14 @@
   <div class="add-entry">
     <h3>Lisää merkintä</h3>
     <form [formGroup]="entryForm" (ngSubmit)="submitEntry()">
+      <div class="form-group">
+        <label for="mode">Yksittäinen vai toistuva:</label>
+        <select id="mode" formControlName="mode">
+          <option value="single">Yksittäinen</option>
+          <option value="recurring">Toistuva</option>
+        </select>
+      </div>
+
       <!-- Tyyppi: Tulo vai Meno -->
       <div class="form-group">
         <label for="entryType">Tyyppi:</label>
@@ -104,7 +119,26 @@
         <input id="date" type="date" formControlName="date" />
       </div>
 
-      <!-- Nappi -->
+      @if (entryForm.value.mode === 'recurring') {
+        <div class="form-group">
+          <label for="frequency">Toisto:</label>
+          <select id="frequency" formControlName="frequency">
+            <option value="monthly">Kuukausittain</option>
+            <option value="weekly">Viikoittain</option>
+          </select>
+        </div>
+
+        <!-- <div class="form-group">
+          <label for="startDate">Aloituspäivä:</label>
+          <input id="startDate" type="date" formControlName="startDate" />
+        </div>
+
+        <div class="form-group">
+          <label for="endDate">Lopetuspäivä (valinnainen):</label>
+          <input id="endDate" type="date" formControlName="endDate" />
+        </div> -->
+      }
+
       <button type="submit" [disabled]="entryForm.invalid" class="submit-btn">
         Lisää merkintä
       </button>

@@ -5,5 +5,4 @@ export interface BudgetEntry {
   amount: number;
   description: string;
   date: Date;
-  // isRecurring: boolean;
 }

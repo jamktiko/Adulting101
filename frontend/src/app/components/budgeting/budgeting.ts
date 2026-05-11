@@ -5,6 +5,8 @@ import { RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { BudgetEntry } from '../../models/budget-entry';
 import { NewBudgetEntry } from '../../models/new-budget-entry';
+import { RecurringEntry } from '../../models/recurring-entry';
+import { NewRecurringEntry } from '../../models/new-recurring-entry';
 
 @Component({
   selector: 'app-budgeting',
@@ -21,6 +23,7 @@ export class Budgeting implements OnInit {
   currentMonth = signal(this.getCurrentMonth());
   budgetLimit = signal(0);
   entries = signal<BudgetEntry[]>([]);
+  recurringEntries = signal<RecurringEntry[]>([]);
 
   // Lasketut arvot
   totalIncome = computed(() =>
@@ -40,30 +43,60 @@ export class Budgeting implements OnInit {
 
   // Lomakkeen FormGroup
   entryForm = this.fb.group({
+    mode: ['single', Validators.required],
     type: ['expense', Validators.required],
     category: ['', Validators.required],
     amount: [0, [Validators.required, Validators.min(0.01)]],
     description: [''],
     date: [new Date().toISOString().split('T')[0], Validators.required],
+    frequency: ['monthly'],
+    // startDate: [new Date().toISOString().split('T')[0]],
+    // endDate: [''],
   });
 
   submitEntry() {
-    if (this.entryForm.valid) {
-      const formValue = this.entryForm.value;
+    if (!this.entryForm.valid) return;
+
+    const formValue = this.entryForm.value;
+
+    if (formValue.mode === 'single') {
       const entry: NewBudgetEntry = {
-        type: formValue['type'] as 'income' | 'expense',
-        category: formValue['category']!,
-        amount: Number(formValue['amount']),
-        description: formValue['description'] || '',
-        date: new Date(formValue['date']!),
+        type: formValue.type as 'income' | 'expense',
+        category: formValue.category!,
+        amount: Number(formValue.amount),
+        description: formValue.description || '',
+        date: new Date(formValue.date!),
       };
       this.addEntry(entry);
-      this.entryForm.reset({ type: 'expense', date: new Date().toISOString().split('T')[0] });
+    } else {
+      const recurring: NewRecurringEntry = {
+        type: formValue.type as 'income' | 'expense',
+        category: formValue.category!,
+        amount: Number(formValue.amount),
+        description: formValue.description || '',
+        frequency: formValue.frequency as 'monthly' | 'weekly',
+        // startDate: formValue.startDate,
+        // endDate: formValue.endDate || undefined,
+      };
+      this.addRecurringEntry(recurring);
     }
+
+    this.entryForm.reset({
+      mode: 'single',
+      type: 'expense',
+      category: '',
+      amount: 0,
+      description: '',
+      date: new Date().toISOString().split('T')[0],
+      frequency: 'monthly',
+      // startDate: new Date().toISOString().split('T')[0],
+      // endDate: '',
+    });
   }
 
   ngOnInit() {
     this.loadBudget();
+    this.loadRecurringEntries();
   }
 
   loadBudget() {
@@ -76,6 +109,12 @@ export class Budgeting implements OnInit {
     });
   }
 
+  loadRecurringEntries() {
+    this.dataService
+      .getRecurringEntries('user123')
+      .subscribe((recurring) => this.recurringEntries.set(recurring));
+  }
+
   addEntry(entry: NewBudgetEntry) {
     this.dataService
       .addEntry('user123', this.currentMonth(), entry)
@@ -86,6 +125,16 @@ export class Budgeting implements OnInit {
     this.dataService
       .deleteEntry('user123', this.currentMonth(), entryId)
       .subscribe(() => this.loadBudget());
+  }
+
+  addRecurringEntry(entry: NewRecurringEntry) {
+    this.dataService
+      .addRecurringEntry('user123', entry)
+      .subscribe(() => this.loadRecurringEntries());
+  }
+
+  deleteRecurringEntry(entryId: string) {
+    this.dataService.deleteRecurringEntry(entryId).subscribe(() => this.loadRecurringEntries());
   }
 
   updateBudgetLimit(newLimit: number) {

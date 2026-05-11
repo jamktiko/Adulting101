@@ -8,6 +8,7 @@ const { signUpUser, confirmUser, loginUser } = require('./utils/cognito');
 // --- MALLIEN TUONTI ---
 const User = require('./models/User');
 const Budget = require('./models/Budget');
+const RecurringEntry = require('./models/RecurringEntry');
 const Entertainment = require('./models/Entertainment');
 const MoveItem = require('./models/MoveItem');
 const CleanItem = require('./models/CleanItem');
@@ -192,6 +193,16 @@ app.get('/api/budgets/:userId/:month', async (req, res) => {
   }
 });
 
+// Hae käyttäjän toistuvat budjettimerkinnät
+app.get('/api/recurring/:userId', async (req, res) => {
+  try {
+    const recurring = await RecurringEntry.find({ user_id: req.params.userId });
+    res.json(recurring);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Päivitä kuukausibudjetin raja
 app.patch('/api/budgets/:userId/:month/limit', async (req, res) => {
   try {
@@ -222,7 +233,21 @@ app.post('/api/budgets/:userId/:month/entry', async (req, res) => {
   }
 });
 
-// Poista merkintä
+// Lisää uusi toistuva budjettimerkintä
+app.post('/api/recurring/:userId', async (req, res) => {
+  try {
+    const newRecurring = new RecurringEntry({
+      ...req.body,
+      user_id: req.params.userId,
+    });
+    const saved = await newRecurring.save();
+    res.status(201).json(saved);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Poista budjettimerkintä
 app.delete('/api/budgets/:userId/:month/entry/:entryId', async (req, res) => {
   try {
     const budget = await Budget.findOneAndUpdate(
@@ -231,6 +256,16 @@ app.delete('/api/budgets/:userId/:month/entry/:entryId', async (req, res) => {
       { new: true },
     );
     res.json(budget);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Poista toistuva budjettimerkintä
+app.delete('/api/recurring/:entryId', async (req, res) => {
+  try {
+    await RecurringEntry.findByIdAndDelete(req.params.entryId);
+    res.json({ message: 'Merkintä poistettu' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

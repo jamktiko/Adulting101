@@ -27,9 +27,6 @@ const BudgetSchema = new mongoose.Schema(
         amount: { type: Number, required: true },
         description: String,
         date: { type: Date, default: Date.now, required: true },
-        // otetaan ehkä mukaan
-        // isRecurring: { type: Boolean, default: false },
-        // recurringId: String, // Linkittää toistuviin merkintöihin
       },
     ],
   },

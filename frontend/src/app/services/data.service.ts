@@ -4,6 +4,8 @@ import { Observable } from 'rxjs'; // data haetaan asynkronisesti observablena
 import { Checklist } from '../models/checklist';
 import { Guide } from '../models/guide';
 import { NewBudgetEntry } from '../models/new-budget-entry';
+import { RecurringEntry } from '../models/recurring-entry';
+import { NewRecurringEntry } from '../models/new-recurring-entry';
 
 @Injectable({
   providedIn: 'root',
@@ -13,8 +15,9 @@ export class DataService {
   private apiurlMoving = 'api/muutto';
   private apiurlCleaning = 'api/siivous';
 
-  // Oikean palvelimen osoite
+  // Oikean palvelimen osoitteet
   private apiUrlBudget = 'api/budgets';
+  private apiUrlBudgetR = 'api/recurring';
 
   private http = inject(HttpClient);
 
@@ -39,19 +42,34 @@ export class DataService {
   }
 
   // Aseta kuukausibudjetin raja
-  setBudgetLimit(userId: string, month: string, limit: number): Observable<any> {
+  setBudgetLimit(userId: string, month: string, limit: number) {
     return this.http.patch(`${this.apiUrlBudget}/${userId}/${month}/limit`, {
       monthlyBudgetLimit: limit,
     });
   }
 
-  // Lisää merkintä
-  addEntry(userId: string, month: string, entry: NewBudgetEntry): Observable<any> {
+  // Lisää budjettimerkintä
+  addEntry(userId: string, month: string, entry: NewBudgetEntry) {
     return this.http.post(`${this.apiUrlBudget}/${userId}/${month}/entry`, entry);
   }
 
-  // Poista merkintä
-  deleteEntry(userId: string, month: string, entryId: string): Observable<any> {
+  // Poista budjettimerkintä
+  deleteEntry(userId: string, month: string, entryId: string) {
     return this.http.delete(`${this.apiUrlBudget}/${userId}/${month}/entry/${entryId}`);
+  }
+
+  // Hae toistuvat budjettimerkinnät
+  getRecurringEntries(userId: string) {
+    return this.http.get<RecurringEntry[]>(`${this.apiUrlBudgetR}/${userId}`);
+  }
+
+  // Lisää toistuva budjettimerkintä
+  addRecurringEntry(userId: string, entry: NewRecurringEntry) {
+    return this.http.post(`${this.apiUrlBudgetR}/${userId}`, entry);
+  }
+
+  // Poista toistuva budjettimerkintä
+  deleteRecurringEntry(entryId: string) {
+    return this.http.delete(`${this.apiUrlBudgetR}/${entryId}`);
   }
 }

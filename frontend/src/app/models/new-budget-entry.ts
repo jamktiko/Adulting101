@@ -4,5 +4,4 @@ export interface NewBudgetEntry {
   amount: number;
   description: string;
   date: Date;
-  // isRecurring: boolean;
 }
