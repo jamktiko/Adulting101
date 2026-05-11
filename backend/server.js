@@ -26,6 +26,11 @@ mongoose
   .then(() => console.log('✅ Yhteys MongoDB-pilveen ok!'))
   .catch((error) => console.error('❌ Yhteysvirhe:', error.message));
 
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+  });
+
 // --- APUFUNKTIOT ---
 function shouldResetWeekly(lastResetDate) {
   if (!lastResetDate) return true;
@@ -321,8 +326,34 @@ app.post('/api/signup', async (req, res) => {
 
     res.status(200).json({ message: 'Rekisteröityminen onnistui.' });
   } catch (error) {
-    console.error("Signup virhe:", error);
-    res.status(400).json({ error: error.message || 'Rekisteröitymisvirhe' });
+    console.error("Signup-virhe:", error.message);
+    // TÄRKEÄÄ: Lähetetään JSON-objekti, jossa on error-kenttä
+    res.status(400).json({ 
+      error: 'Rekisteröitymisvirhe', 
+      message: error.message || 'Tiliä ei voitu luoda' 
+    });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const tokens = await loginUser(username, password);
+    
+    if (!tokens) {
+      return res.status(401).json({ 
+        error: 'Kirjautumisvirhe', 
+        message: 'Cognito ei palauttanut tokeneita.' 
+      });
+    }
+
+    res.status(200).json(tokens);
+  } catch (error) {
+    console.error("Login-virhe:", error.message);
+    res.status(401).json({ 
+      error: 'Kirjautumisvirhe', 
+      message: error.message || 'Väärä käyttäjänimi tai salasana' 
+    });
   }
 });
 
@@ -333,16 +364,6 @@ app.post('/api/confirm', async (req, res) => {
     res.status(200).json({ message: 'Tili vahvistettu!' });
   } catch (error) {
     res.status(400).json({ error: error.message });
-  }
-});
-
-app.post('/api/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const tokens = await loginUser(username, password);
-    res.status(200).json(tokens);
-  } catch (error) {
-    res.status(401).json({ error: 'Kirjautumisvirhe' });
   }
 });
 
