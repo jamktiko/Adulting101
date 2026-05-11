@@ -246,4 +246,9 @@ export class Board implements AfterViewInit {
   navigateToLogin() {
     this.router.navigate(['/login']);
   }
+  logout() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('idToken');
+    this.router.navigate(['/login']);
+  }
 }
