@@ -15,12 +15,8 @@ const CleanItem = require('./models/CleanItem');
 const app = express();
 
 // --- MIDDLEWARE ---
-app.use(cors({
-  origin: true, // Sallii sen originin, josta pyyntö tulee
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  credentials: true // Tarpeen, jos käytät evästeitä tai sessioita
-}));
+app.use(cors());
+app.use(express.json());
 
 // --- TIETOKANTAYHTEYS ---
 const uri = process.env.MONGODB_URI;
