@@ -80,11 +80,60 @@ export class InMemoryDataService implements InMemoryDbService {
     const talous: Guide[] = [
       {
         id: 'talous-001',
+        title: 'Arjen rahankäyttö',
         content: [
-          'Seuraa tulojasi ja menojasi säännöllisesti',
+          'Tee realistinen kuukausibudjetti ja tarkista tilanne esim. kerran viikossa',
+          'Priorisoi pakolliset menot ensin',
+          'Vältä impulssiostoksia – anna itsellesi "harkinta-aika" ennen ostamista',
+          'Seuraa toistuvia tilauksia (suoratoistopalvelut ym.) ja karsi turhat',
+        ],
+      },
+      {
+        id: 'talous-002',
+        title: 'Säästäminen ja varautuminen',
+        content: [
+          'Rakenna puskurirahasto (tavoite esim. 2-3 kuukauden menot)',
           'Siirrä edes pieni summa säästöön joka kuukausi',
+          'Hyödynnä automaattinen säästäminen (siirto heti palkkapäivänä)',
+          'Säästä myös epäsäännöllisiin menoihin (esim. vakuutukset, lomat, kodin hankinnat)',
+          'Avaa erillinen säästötili, jotta rahat eivät sekoitu käyttörahaan',
+        ],
+      },
+      {
+        id: 'talous-003',
+        title: 'Laskut ja sopimukset',
+        content: [
+          'Ota e-lasku ja/tai suoramaksu käyttöön, jotta laskut eivät unohdu',
+          'Pidä kalenterimuistutukset eräpäivistä',
           'Jos et pysty maksamaan laskua, ota yhteyttä laskuttajaan ja sovi maksusuunnitelma',
+          'Kilpailuta säännöllisesti sopimukset (puhelin, sähkö, vakuutukset)',
+        ],
+      },
+      {
+        id: 'talous-004',
+        title: 'Velka ja luotto',
+        content: [
+          'Vältä korkeakorkoisia pikavippejä ja kulutusluottoja',
+          'Ymmärrä korko ja todellinen vuosikorko ennen lainaa',
           'Älä ota lainaa, jos et ole varma takaisinmaksukyvystäsi',
+          'Maksa luottokorttilasku aina kokonaan, jos mahdollista',
+          'Jos velkaa on, priorisoi korkeakorkoiset pois ensin',
+        ],
+      },
+      {
+        id: 'talous-005',
+        title: 'Tulot',
+        content: [
+          'Pidä huolta oikeasta veroprosentista (ettei tule mätkyjä)',
+          'Selvitä mahdolliset tuet (opintotuki, asumistuki jne.)',
+        ],
+      },
+      {
+        id: 'talous-006',
+        title: 'Turvallisuus ja pitkän aikavälin suunnittelu',
+        content: [
+          'Hanki perusvakuutukset (ainakin kotivakuutus)',
+          'Aloita sijoittaminen pienesti, kun perusasiat kunnossa',
         ],
       },
     ];
