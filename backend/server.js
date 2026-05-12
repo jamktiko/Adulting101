@@ -231,6 +231,7 @@ app.post('/api/users/:userId/notes', async (req, res) => {
       { $push: { notes: { title, content } } },
       { new: true } // Palauttaa päivitetyn dokumentin
     );
+    console.log(user)
     res.status(201).json(user.notes[user.notes.length - 1]);
   } catch (err) {
     res.status(500).json({ error: err.message });
