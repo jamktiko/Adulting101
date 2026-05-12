@@ -1,7 +1,7 @@
 {
-  "name": "adulting101-esituotanto",
+  "name": "adulting101-backend",
   "version": "1.0.0",
-  "description": "--START This is a example template, which you can use. Version 1.0. --END # Project Title",
+  "description": "",
   "main": "server.js",
   "directories": {
     "doc": "docs"
@@ -12,21 +12,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jamktiko/Adulting101-esituotanto.git"
+    "url": "git+https://github.com/jamktiko/Adulting101.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/jamktiko/Adulting101-esituotanto/issues"
+    "url": "https://github.com/jamktiko/Adulting101/issues"
   },
-  "homepage": "https://github.com/jamktiko/Adulting101-esituotanto#readme",
+  "homepage": "https://github.com/jamktiko/Adulting101#readme",
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.1038.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.1",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.1.0",
     "mongoose": "^9.5.0"
   }
 }
