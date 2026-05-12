@@ -28,18 +28,21 @@ const app = express();
 // --- MIDDLEWARE ---
 app.use(cors());
 app.use(express.json());
-
-// Tietoturvaa varten (https://www.npmjs.com/package/helmet)
 app.use(helmet());
 
-// Tietoturvaa varten (https://www.npmjs.com/package/express-rate-limit)
+// Rajataan pyyntöjen määrää tietoturvan vuoksi
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minuuttia
-  max: 100, // max 100 requestia per IP
+  max: 100, 
   message: 'Liian monta pyyntöä, yritä myöhemmin uudelleen'
 });
-
 app.use('/api/', limiter);
+
+// Välimuistin hallinta
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
 
 // --- TIETOKANTAYHTEYS ---
 const uri = process.env.MONGODB_URI;
@@ -47,11 +50,6 @@ mongoose
   .connect(uri)
   .then(() => console.log('✅ Yhteys MongoDB-pilveen ok!'))
   .catch((error) => console.error('❌ Yhteysvirhe:', error.message));
-
-  app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    next();
-  });
 
 // --- APUFUNKTIOT ---
 function shouldResetWeekly(lastResetDate) {
@@ -76,7 +74,6 @@ app.get('/', (req, res) => {
 
 // --- 1. KÄYTTÄJÄT JA LISTAT ---
 
-// Hae kaikki käyttäjät
 app.get('/api/users', async (req, res) => {
   try {
     const users = await User.find();
@@ -167,47 +164,8 @@ app.patch('/api/users/:userId/toggle-cleaning-task', async (req, res) => {
   }
 });
 
-// --- 2. BUDJETTI ---
+// --- 2. BUDJETTI (PÄIVITETTY) ---
 
-app.get('/api/budgets', async (req, res) => {
-  try {
-    const budgets = await Budget.find();
-    res.json(budgets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/budgets/:userId', async (req, res) => {
-  try {
-    const userBudgets = await Budget.find({ user_id: req.params.userId });
-    res.json(userBudgets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/budgets', async (req, res) => {
-  try {
-    const newEntry = new Budget(req.body);
-    const savedEntry = await newEntry.save();
-    res.status(201).json(savedEntry);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-app.delete('/api/budgets/:id', async (req, res) => {
-  try {
-    await Budget.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Merkintä poistettu' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Ainon lisäämät koodit (budjettiin liittyvät)
-// Hae käyttäjän budjetti tietylle kuukaudelle
 app.get('/api/budgets/:userId/:month', async (req, res) => {
   try {
     const budget = await Budget.findOne({
@@ -220,17 +178,6 @@ app.get('/api/budgets/:userId/:month', async (req, res) => {
   }
 });
 
-// Hae käyttäjän toistuvat budjettimerkinnät
-app.get('/api/recurring/:userId', async (req, res) => {
-  try {
-    const recurring = await RecurringEntry.find({ user_id: req.params.userId });
-    res.json(recurring);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Päivitä kuukausibudjetin raja
 app.patch('/api/budgets/:userId/:month/limit', 
   validateBudgetLimit, 
   handleValidationErrors, 
@@ -240,7 +187,7 @@ app.patch('/api/budgets/:userId/:month/limit',
     const budget = await Budget.findOneAndUpdate(
       { user_id: req.params.userId, month: req.params.month },
       { monthlyBudgetLimit },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
     res.json(budget);
   } catch (err) {
@@ -248,7 +195,6 @@ app.patch('/api/budgets/:userId/:month/limit',
   }
 });
 
-// Lisää tulo tai meno
 app.post('/api/budgets/:userId/:month/entry', 
   validateBudgetEntry, 
   handleValidationErrors, 
@@ -263,7 +209,7 @@ app.post('/api/budgets/:userId/:month/entry',
     const budget = await Budget.findOneAndUpdate(
       { user_id: req.params.userId, month: req.params.month },
       { $push: { entries: cleanData } },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
     res.status(201).json(budget);
   } catch (err) {
@@ -271,37 +217,12 @@ app.post('/api/budgets/:userId/:month/entry',
   }
 });
 
-// Lisää uusi toistuva budjettimerkintä
-app.post('/api/recurring/:userId', 
-  validateRecurringEntry, 
-  handleValidationErrors, 
-  async (req, res) => {
-  try {
-    const cleanData = {
-      ...req.body,
-      category: sanitize(req.body.category),
-      description: sanitize(req.body.description),
-    };
-
-    const newRecurring = new RecurringEntry({
-      ...cleanData,
-      user_id: req.params.userId,
-    });
-
-    const saved = await newRecurring.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// Poista budjettimerkintä
 app.delete('/api/budgets/:userId/:month/entry/:entryId', async (req, res) => {
   try {
     const budget = await Budget.findOneAndUpdate(
       { user_id: req.params.userId, month: req.params.month },
       { $pull: { entries: { _id: req.params.entryId } } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     res.json(budget);
   } catch (err) {
@@ -309,45 +230,7 @@ app.delete('/api/budgets/:userId/:month/entry/:entryId', async (req, res) => {
   }
 });
 
-// Poista toistuva budjettimerkintä
-app.delete('/api/recurring/:entryId', async (req, res) => {
-  try {
-    await RecurringEntry.findByIdAndDelete(req.params.entryId);
-    res.json({ message: 'Merkintä poistettu' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// --- 3. VIIHDE ---
-
-app.get('/api/entertainment', async (req, res) => {
-  try {
-    const items = await Entertainment.find();
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/entertainment/:userId', async (req, res) => {
-  try {
-    const items = await Entertainment.find({ user_id: req.params.userId });
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/entertainment', async (req, res) => {
-  try {
-    const newItem = new Entertainment(req.body);
-    const savedItem = await newItem.save();
-    res.status(201).json(savedItem);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// --- 3. VIIHDE JA MUISTILAPUT ---
 
 app.get('/api/users/:userId/notes', async (req, res) => {
   try {
@@ -362,12 +245,11 @@ app.get('/api/users/:userId/notes', async (req, res) => {
 app.post('/api/users/:userId/notes', async (req, res) => {
   try {
     const { title, content } = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.params.userId,
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.userId },
       { $push: { notes: { title, content } } },
-      { new: true } // Palauttaa päivitetyn dokumentin
+      { returnDocument: 'after' }
     );
-    console.log(user)
     res.status(201).json(user.notes[user.notes.length - 1]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -406,12 +288,7 @@ app.post('/api/signup', async (req, res) => {
 
     res.status(200).json({ message: 'Rekisteröityminen onnistui.' });
   } catch (error) {
-    console.error("Signup-virhe:", error.message);
-    // TÄRKEÄÄ: Lähetetään JSON-objekti, jossa on error-kenttä
-    res.status(400).json({ 
-      error: 'Rekisteröitymisvirhe', 
-      message: error.message || 'Tiliä ei voitu luoda' 
-    });
+    res.status(400).json({ error: 'Rekisteröitymisvirhe', message: error.message });
   }
 });
 
@@ -419,21 +296,9 @@ app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     const tokens = await loginUser(username, password);
-    
-    if (!tokens) {
-      return res.status(401).json({ 
-        error: 'Kirjautumisvirhe', 
-        message: 'Cognito ei palauttanut tokeneita.' 
-      });
-    }
-
     res.status(200).json(tokens);
   } catch (error) {
-    console.error("Login-virhe:", error.message);
-    res.status(401).json({ 
-      error: 'Kirjautumisvirhe', 
-      message: error.message || 'Väärä käyttäjänimi tai salasana' 
-    });
+    res.status(401).json({ error: 'Kirjautumisvirhe', message: error.message });
   }
 });
 
