@@ -10,6 +10,7 @@ const authCheck = require('./middleware/authCheck');
 const { 
   validateBudgetEntry, 
   validateRecurringEntry, 
+  validateBudgetLimit, 
   handleValidationErrors 
 } = require('./middleware/validators');
 const sanitize = require('./utils/sanitizer');
@@ -230,7 +231,10 @@ app.get('/api/recurring/:userId', async (req, res) => {
 });
 
 // Päivitä kuukausibudjetin raja
-app.patch('/api/budgets/:userId/:month/limit', async (req, res) => {
+app.patch('/api/budgets/:userId/:month/limit', 
+  validateBudgetLimit, 
+  handleValidationErrors, 
+  async (req, res) => {
   try {
     const { monthlyBudgetLimit } = req.body;
     const budget = await Budget.findOneAndUpdate(
@@ -250,10 +254,15 @@ app.post('/api/budgets/:userId/:month/entry',
   handleValidationErrors, 
   async (req, res) => {
   try {
-    const entry = req.body;
+    const cleanData = {
+      ...req.body,
+      category: sanitize(req.body.category),
+      description: sanitize(req.body.description),
+    };
+
     const budget = await Budget.findOneAndUpdate(
       { user_id: req.params.userId, month: req.params.month },
-      { $push: { entries: entry } },
+      { $push: { entries: cleanData } },
       { upsert: true, new: true },
     );
     res.status(201).json(budget);
@@ -268,10 +277,17 @@ app.post('/api/recurring/:userId',
   handleValidationErrors, 
   async (req, res) => {
   try {
-    const newRecurring = new RecurringEntry({
+    const cleanData = {
       ...req.body,
+      category: sanitize(req.body.category),
+      description: sanitize(req.body.description),
+    };
+
+    const newRecurring = new RecurringEntry({
+      ...cleanData,
       user_id: req.params.userId,
     });
+
     const saved = await newRecurring.save();
     res.status(201).json(saved);
   } catch (err) {

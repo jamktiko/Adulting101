@@ -1,3 +1,5 @@
+// Poistaa HTML-tagit XSS-hyökkäysten estämiseksi
+
 const sanitize = (input) => {
   if (typeof input !== 'string') return input;
   return input

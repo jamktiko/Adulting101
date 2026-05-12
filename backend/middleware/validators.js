@@ -16,6 +16,11 @@ const validateRecurringEntry = [
   body('frequency').isIn(['monthly', 'weekly']),
 ];
 
+const validateBudgetLimit = body('monthlyBudgetLimit').isFloat({
+  min: 0,
+  max: 1000000,
+});
+
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -30,5 +35,6 @@ const handleValidationErrors = (req, res, next) => {
 module.exports = {
   validateBudgetEntry,
   validateRecurringEntry,
+  validateBudgetLimit,
   handleValidationErrors,
 };

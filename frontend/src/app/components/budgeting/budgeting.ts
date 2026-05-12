@@ -115,8 +115,7 @@ export class Budgeting implements OnInit {
   }
 
   loadBudget() {
-    // Korvaa 'user123' todellisella userId:lla (auth-palvelusta)
-    this.dataService.getBudget('user123', this.currentMonth()).subscribe((budget) => {
+    this.dataService.getBudget('testi-user-123', this.currentMonth()).subscribe((budget) => {
       if (budget.entries) {
         this.entries.set(budget.entries);
       }
@@ -126,25 +125,25 @@ export class Budgeting implements OnInit {
 
   loadRecurringEntries() {
     this.dataService
-      .getRecurringEntries('user123')
+      .getRecurringEntries('testi-user-123')
       .subscribe((recurring) => this.recurringEntries.set(recurring));
   }
 
   addEntry(entry: NewBudgetEntry) {
     this.dataService
-      .addEntry('user123', this.currentMonth(), entry)
+      .addEntry('testi-user-123', this.currentMonth(), entry)
       .subscribe(() => this.loadBudget());
   }
 
   deleteEntry(entryId: string) {
     this.dataService
-      .deleteEntry('user123', this.currentMonth(), entryId)
+      .deleteEntry('testi-user-123', this.currentMonth(), entryId)
       .subscribe(() => this.loadBudget());
   }
 
   addRecurringEntry(entry: NewRecurringEntry) {
     this.dataService
-      .addRecurringEntry('user123', entry)
+      .addRecurringEntry('testi-user-123', entry)
       .subscribe(() => this.loadRecurringEntries());
   }
 
@@ -154,7 +153,7 @@ export class Budgeting implements OnInit {
 
   updateBudgetLimit(newLimit: number) {
     this.dataService
-      .setBudgetLimit('user123', this.currentMonth(), newLimit)
+      .setBudgetLimit('testi-user-123', this.currentMonth(), newLimit)
       .subscribe(() => this.budgetLimit.set(newLimit));
   }
 
