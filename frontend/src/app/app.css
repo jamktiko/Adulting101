@@ -1,11 +1,33 @@
 .app-container {
   min-height: 100vh;
-  /* background-color poistettu, jotta styles.css:n globaali ilmoitustaulu-tausta näkyy */
 }
 
 .header {
   text-align: center;
   padding: 20px;
-  background: #92400e;
+  background: var(--header-bg, #92400e);
   color: white;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* Uudet hover-efektit yläpalkille */
+.header:hover {
+  filter: brightness(1.1); /* Tekee taustaväristä hieman vaaleamman */
+  transform: translateY(-2px); /* Nostaa palkkia hieman ylöspäin */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Lisää varjon */
+}
+
+/* Tekstin vaihdon logiikka */
+.hover-text {
+  display: none;
+  font-weight: bold;
+}
+
+.header:hover .default-text {
+  display: none;
+}
+
+.header:hover .hover-text {
+  display: inline;
 }

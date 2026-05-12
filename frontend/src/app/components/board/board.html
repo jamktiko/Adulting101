@@ -2,6 +2,7 @@
   <!-- Yläpalkin navigaatiot ym. -->
   <div class="top-controls">
     <button (click)="navigateToLogin()">Kirjaudu</button>
+    <button (click)="logout()">Kirjaudu ulos</button>
     <button (click)="toggleSettingsModal()">Asetukset</button>
     <button (click)="toggleAddForm()">Uusi muistilappu</button>
   </div>
@@ -46,59 +47,88 @@
   }
 
   @if (showAddForm) {
-    <!-- Lomake uuden muistilapun lisäämiselle, visualisoitu lomake muistilappuna -->
-    <div class="post-it bg-pink add-note-form" style="width: 300px; margin: 20px auto; z-index: 10">
-      <div class="tape tape-center"></div>
-      <label>Otsikko:</label>
-      <div class="input-wrapper" style="margin-bottom: 12px">
-        <input
-          type="text"
-          [(ngModel)]="newNote.title"
-          placeholder="Anna otsikko..."
-          style="padding-left: 12px"
-        />
-      </div>
+    <!-- Lomake uuden muistilapun lisäämiselle modaalina -->
+    <div class="modal-overlay" style="z-index: 100">
+      <div
+        class="post-it bg-pink modal-post-it"
+        style="width: 320px; z-index: 101; text-align: left"
+      >
+        <div class="tape tape-center"></div>
 
-      <label>Sisältö (teksti):</label>
-      <div class="input-wrapper" style="margin-bottom: 12px">
-        <textarea
-          [(ngModel)]="newNote.content"
-          placeholder="Mitä haluat muistaa?"
-          rows="3"
+        <!-- X-nappula sulkemista varten -->
+        <button
+          (click)="toggleAddForm()"
           style="
-            width: 100%;
-            border: 2px solid #9ca3af;
-            border-radius: 4px;
-            padding: 12px;
-            font-family: inherit;
-            box-sizing: border-box;
-          "
-        ></textarea>
-      </div>
-
-      <label>Väri:</label>
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px">
-        <input
-          type="color"
-          [(ngModel)]="newNote.color"
-          style="
-            width: 50px;
-            height: 50px;
-            padding: 0;
-            border: 2px solid #9ca3af;
-            border-radius: 4px;
-            cursor: pointer;
+            position: absolute;
+            top: 12px;
+            right: 12px;
             background: none;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #4b5563;
           "
-        />
-        <span style="color: #4b5563; font-size: 14px; line-height: 1.2">
-          Valitse oma väri värikartasta klikkaamalla
-        </span>
-      </div>
+          title="Sulje"
+        >
+          ✕
+        </button>
 
-      <button class="btn-post-it bg-green" style="width: 100%; padding: 12px" (click)="addNote()">
-        Lisää ilmoitustaululle
-      </button>
+        <h3 style="margin-top: 5px; margin-bottom: 16px; color: #1f2937; text-align: center">
+          Uusi muistilappu
+        </h3>
+
+        <label>Otsikko:</label>
+        <div class="input-wrapper" style="margin-bottom: 12px">
+          <input
+            type="text"
+            [(ngModel)]="newNote.title"
+            placeholder="Anna otsikko..."
+            style="padding-left: 12px"
+          />
+        </div>
+
+        <label>Sisältö (teksti):</label>
+        <div class="input-wrapper" style="margin-bottom: 12px">
+          <textarea
+            [(ngModel)]="newNote.content"
+            placeholder="Mitä haluat muistaa?"
+            rows="3"
+            style="
+              width: 100%;
+              border: 2px solid #9ca3af;
+              border-radius: 4px;
+              padding: 12px;
+              font-family: inherit;
+              box-sizing: border-box;
+            "
+          ></textarea>
+        </div>
+
+        <label>Väri:</label>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px">
+          <input
+            type="color"
+            [(ngModel)]="newNote.color"
+            style="
+              width: 50px;
+              height: 50px;
+              padding: 0;
+              border: 2px solid #9ca3af;
+              border-radius: 4px;
+              cursor: pointer;
+              background: none;
+            "
+          />
+          <span style="color: #4b5563; font-size: 14px; line-height: 1.2">
+            Valitse oma väri värikartasta klikkaamalla
+          </span>
+        </div>
+
+        <button class="btn-post-it bg-green" style="width: 100%; padding: 12px" (click)="addNote()">
+          Lisää ilmoitustaululle
+        </button>
+      </div>
     </div>
   }
 
