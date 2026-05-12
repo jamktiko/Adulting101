@@ -1,47 +1,48 @@
 const mongoose = require('mongoose');
 
+// 1. Määritellään ensin muistilapun rakenne (sub-document)
+const noteSchema = new mongoose.Schema({
+    title: { type: String, default: "" },
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+// 2. Yhdistetään kaikki käyttäjän tiedot yhteen skeemaan
 const userSchema = new mongoose.Schema({
-    // Käytetään merkkijonoa, jotta ID voi olla esim. Cognitosta tuleva UUID
+    // Käytetään merkkijonoa (Cognito UUID)
     _id: { type: String, required: true },
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
     
-    // 1. MUUTTOLISTA (Pysyvät hankinnat)
-    // Tallennetaan vain ID:t, esim. ["item_001", "item_005"]
+    // Lista ostetuista tavaroista (ID:t)
     purchased_items: {
         type: [String],
         default: []
     },
 
-    // 2. VIIKKOSIIVOUS (Viikoittain nollautuva)
-    // Tallennetaan vain suoritettujen tehtävien ID:t, esim. ["task_001"]
+    // Lista tehdyistä siivoustehtävistä (ID:t)
     completed_cleaning_tasks: {
         type: [String],
         default: []
     },
+
+    // MUISTILAPUT: Tämä on nyt oikein sijoitettu osaksi käyttäjää
+    notes: {
+        type: [noteSchema],
+        default: []
+    },
     
-    // Pidetään kirjaa, milloin lista on viimeksi nollattu
+    // Aikaleimat
     last_reset: { 
         type: Date, 
         default: Date.now 
     },
-    
-    createdAt: { type: Date, default: Date.now }
-}, { versionKey: false });
+    createdAt: { 
+        type: Date, 
+        default: Date.now 
+    }
+}, { versionKey: false }); // Poistaa __v -kentän
 
-const NoteSchema = new mongoose.Schema({
-    title: String,
-    content: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
-  });
-  
-  const UserSchema = new mongoose.Schema({
-    _id: String, // Cognito Sub
-    username: String,
-    email: String,
-    // ... muut kentät (purchased_items jne.)
-    notes: [NoteSchema] // Tässä on "taulu taulun sisällä"
-  });
-
+// 3. Luodaan malli käyttäen yhdistettyä skeemaa
 module.exports = mongoose.model('users', userSchema);
