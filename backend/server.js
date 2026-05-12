@@ -15,8 +15,11 @@ const CleanItem = require('./models/CleanItem');
 const app = express();
 
 // --- MIDDLEWARE ---
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: '*', 
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // --- TIETOKANTAYHTEYS ---
 const uri = process.env.MONGODB_URI;
