@@ -1,4 +1,29 @@
+<!-- frontend/src/app/components/settings/settings.html -->
 <div>
   <button class="back-button" (click)="close()">Sulje asetukset</button>
 </div>
-<p>Käyttäjän asetukset tulevat tänne.</p>
+
+<div class="settings-content">
+  <h3>Ulkonäkö ja teema (Kokeilu)</h3>
+
+  <div class="setting-group">
+    <label for="board-style">Taulun tyyli:</label>
+    <select id="board-style" (change)="changeTheme($event)">
+      <!-- Arvo voi olla mitä tahansa, kun root hoitaa oletuksen.
+           Kun valitaan default-theme, se menee fallbackina root:iin,
+           koska sille ei ole enää erillistä sääntöä. -->
+      <option value="default-theme">Korkkitaulu (Oletus)</option>
+      <option value="dark-theme">Tumma Ruskea</option>
+    </select>
+  </div>
+
+  <div class="setting-group">
+    <label for="font-style">Valitse Fontti:</label>
+    <select id="font-style" (change)="changeFont($event)">
+      <option value="'Roboto', sans-serif">Oletus (Roboto)</option>
+      <option value="'Courier New', Courier, monospace">Koodari (Monospace)</option>
+      <option value="'Comic Sans MS', cursive, sans-serif">Leikkisä (Comic Sans)</option>
+      <option value="'Times New Roman', Times, serif">Klassinen (Serif)</option>
+    </select>
+  </div>
+</div>

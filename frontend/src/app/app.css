@@ -6,6 +6,7 @@
 .header {
   text-align: center;
   padding: 20px;
-  background: #92400e;
+  background: var(--header-bg, #92400e); /* Käyttää CSS-muuttujaa */
   color: white;
+  transition: background-color 0.3s ease;
 }
