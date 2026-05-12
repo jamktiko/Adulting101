@@ -8,7 +8,7 @@ import { Entertainment } from './components/entertainment/entertainment';
 import { LoginComponent } from './components/login/login';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/bulletinboard', pathMatch: 'full' },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent, title: 'Sisäänkirjautuminen' },
   { path: 'bulletinboard', component: Board, title: 'Etusivu' },
   { path: 'settings', component: Settings, title: 'Asetukset' },
