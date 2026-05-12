@@ -349,6 +349,42 @@ app.post('/api/entertainment', async (req, res) => {
   }
 });
 
+app.get('/api/users/:userId/notes', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ error: 'Käyttäjää ei löytynyt' });
+    res.json(user.notes || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/users/:userId/notes', async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $push: { notes: { title, content } } },
+      { new: true } // Palauttaa päivitetyn dokumentin
+    );
+    res.status(201).json(user.notes[user.notes.length - 1]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/users/:userId/notes/:noteId', async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(
+      req.params.userId,
+      { $pull: { notes: { _id: req.params.noteId } } }
+    );
+    res.json({ message: 'Muistilappu poistettu' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- 4. AUTENTIKOINTI ---
 
 app.post('/api/signup', async (req, res) => {
