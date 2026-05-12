@@ -30,4 +30,18 @@ const userSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 }, { versionKey: false });
 
+const NoteSchema = new mongoose.Schema({
+    title: String,
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  });
+  
+  const UserSchema = new mongoose.Schema({
+    _id: String, // Cognito Sub
+    username: String,
+    email: String,
+    // ... muut kentät (purchased_items jne.)
+    notes: [NoteSchema] // Tässä on "taulu taulun sisällä"
+  });
+
 module.exports = mongoose.model('users', userSchema);
