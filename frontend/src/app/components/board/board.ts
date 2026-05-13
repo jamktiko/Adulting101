@@ -98,6 +98,9 @@ export class Board implements AfterViewInit, OnInit {
   isDragging = false;
   ghostPosition: { x: number; y: number } | null = null;
 
+  // Resoluutiosta riippuva dynaaminen koko skaalaukselle
+  noteScale = 1.0;
+
   private readonly backendApiBase = 'http://localhost:3000/api';
 
   ngAfterViewInit() {
@@ -119,16 +122,6 @@ export class Board implements AfterViewInit, OnInit {
     // Suojakerroin: ei päivitetä jos alue ei ole vielä kunnolla ruudulla
     if (rect.width === 0 || rect.height === 0) return;
 
-    const isOverlapping = (p1: { x: number; y: number }, p2: { x: number; y: number }) => {
-      // Tarkistetaan menevätkö 150x150 laatikot päällekkäin
-      return !(
-        p1.x + NOTE_WIDTH + 8 <= p2.x ||
-        p2.x + NOTE_WIDTH + 8 <= p1.x ||
-        p1.y + NOTE_HEIGHT + 8 <= p2.y ||
-        p2.y + NOTE_HEIGHT + 8 <= p1.y
-      );
-    };
-
     // Alustetaan basePosition jos sitä ei ole vielä kertaakaan asetetu
     this.customNotes.forEach((note) => {
       if (!note.basePosition) {
@@ -136,39 +129,122 @@ export class Board implements AfterViewInit, OnInit {
       }
     });
 
-    // Järjestetään laput ensisijaisesti base-koordinaatin mukaan
+    const isOverlapping = (
+      p1: { x: number; y: number },
+      p2: { x: number; y: number },
+      scale: number,
+    ) => {
+      const w = NOTE_WIDTH * scale;
+      const h = NOTE_HEIGHT * scale;
+      return !(
+        p1.x + w + 8 <= p2.x ||
+        p2.x + w + 8 <= p1.x ||
+        p1.y + h + 8 <= p2.y ||
+        p2.y + h + 8 <= p1.y
+      );
+    };
+
     const sortedNotes = [...this.customNotes].sort(
       (a, b) => a.basePosition!.x - b.basePosition!.x || a.basePosition!.y - b.basePosition!.y,
     );
-    const placed: { x: number; y: number }[] = [];
 
-    sortedNotes.forEach((note) => {
-      // Lasketaan sijainti alkuperäisen paikan perusteella, ei nykyisen rajoitetun sijainnin
-      let newPos = snap(note.basePosition!.x, note.basePosition!.y, rect.width, rect.height);
+    let placed: { x: number; y: number }[] = [];
+    let scale = 1.0;
+    const minScale = 0.4;
+    const scaleStep = 0.1;
+    let placementFound = false;
 
-      let overlap = true;
-      let failsafe = 0;
+    // Kokeillaan sijoitusta eri koko-skaaloilla
+    while (!placementFound && scale >= minScale) {
+      placed = [];
+      let fitAll = true;
 
-      // Haetaan ensimmäinen vapaa paikka alaspäin
-      while (overlap && failsafe < 200) {
-        overlap = placed.some((p) => isOverlapping(newPos, p));
-        if (overlap) {
-          newPos.y += GRID_SIZE; // Siirretään ruudukon verran alaspäin
-          if (newPos.y + NOTE_HEIGHT > rect.height - PADDING) {
-            newPos.y = PADDING; // Aloitetaan ylhäältä
-            newPos.x += GRID_SIZE * 2; // Siirrytään hieman oikealle
-            if (newPos.x + NOTE_WIDTH > rect.width - PADDING) {
-              // Taulu ei enää riitä estämään limitystä, pakotetaan pysäytys
-              break;
+      for (const note of sortedNotes) {
+        let newX = Math.max(
+          PADDING,
+          Math.min(note.basePosition!.x, rect.width - NOTE_WIDTH * scale - PADDING),
+        );
+        let newY = Math.max(
+          PADDING,
+          Math.min(note.basePosition!.y, rect.height - NOTE_HEIGHT * scale - PADDING),
+        );
+
+        let newPos = { x: newX, y: newY };
+        let overlap = true;
+        let failsafe = 0;
+
+        // Etsitään vapaa paikka
+        while (overlap && failsafe < 500) {
+          overlap = placed.some((p) => isOverlapping(newPos, p, scale));
+          if (overlap) {
+            newPos.x += GRID_SIZE; // Kokeillaan ensin siirtää oikealle
+            if (newPos.x + NOTE_WIDTH * scale > rect.width - PADDING) {
+              newPos.x = PADDING; // Rivin vaihto
+              newPos.y += GRID_SIZE; // Siirretään alaspäin
+              // Jos loppuu korkeussuunnassa tila, alue ei riitä!
+              if (newPos.y + NOTE_HEIGHT * scale > Math.max(rect.height, 600) - PADDING) {
+                fitAll = false;
+                break;
+              }
             }
           }
+          failsafe++;
         }
-        failsafe++;
+
+        if (!fitAll) break; // Ei mahtunut tällä skaalalla
+
+        placed.push({ ...newPos });
       }
 
-      placed.push({ ...newPos });
+      if (fitAll) {
+        placementFound = true; // Mahtui!
+      } else {
+        scale -= scaleStep; // Pienennetään skaalaa ja yritetään uudelleen
+      }
+    }
 
-      // Päivitetään cdkDragille uusi sijainti vain jos se muuttui
+    if (!placementFound) {
+      // Jos ei mahtunut edes minimiskaalalla, pakotetaan minimiin ja hyväksytään overlap
+      scale = minScale;
+      // Ajetaan minimillä, vaikka menisi päällekkäin
+      placed = [];
+      for (const note of sortedNotes) {
+        let newPos = {
+          x: Math.max(
+            PADDING,
+            Math.min(note.basePosition!.x, rect.width - NOTE_WIDTH * scale - PADDING),
+          ),
+          y: Math.max(
+            PADDING,
+            Math.min(note.basePosition!.y, rect.height - NOTE_HEIGHT * scale - PADDING),
+          ),
+        };
+        let overlap = true;
+        let failsafe = 0;
+        while (overlap && failsafe < 100) {
+          overlap = placed.some((p) => isOverlapping(newPos, p, scale));
+          if (overlap) {
+            newPos.x += GRID_SIZE;
+            if (newPos.x + NOTE_WIDTH * scale > rect.width - PADDING) {
+              newPos.x = PADDING;
+              newPos.y += GRID_SIZE;
+              if (newPos.y + NOTE_HEIGHT * scale > Math.max(rect.height, 600) - PADDING) {
+                break;
+              }
+            }
+          }
+          failsafe++;
+        }
+        placed.push({ ...newPos });
+      }
+    }
+
+    // Päivitetään skaala HTML:ää varten, koko gridi skaalautuu kerralla täsmälleen suhteessa
+    this.noteScale = scale;
+
+    // Päivitetään koordinaatit
+    sortedNotes.forEach((note, index) => {
+      const newPos = placed[index];
       if (newPos.x !== note.position.x || newPos.y !== note.position.y) {
         note.position = newPos;
       }
@@ -221,10 +297,12 @@ export class Board implements AfterViewInit, OnInit {
     const rect = this.boardRef.nativeElement.getBoundingClientRect();
     const pointer = event.pointerPosition;
 
-    // Laske offset hiiren sijainnista ja laske ghost-snäppäys.
-    // Oletus: CdkDragFreeDragPosition asennetaan elementtiin joka on 'position: absolute; top:0; left:0;'
-    const x = pointer.x - rect.left - NOTE_WIDTH / 2;
-    const y = pointer.y - rect.top - NOTE_HEIGHT / 2;
+    const scaledWidth = NOTE_WIDTH * this.noteScale;
+    const scaledHeight = NOTE_HEIGHT * this.noteScale;
+
+    // Laske offset hiiren sijainnista ja laske ghost-snäppäys huomioiden käynnissä oleva skaala.
+    const x = pointer.x - rect.left - scaledWidth / 2;
+    const y = pointer.y - rect.top - scaledHeight / 2;
 
     this.ghostPosition = snap(x, y, rect.width, rect.height);
   }
@@ -232,7 +310,14 @@ export class Board implements AfterViewInit, OnInit {
   onDragEnd(event: CdkDragEnd, note: CustomNote) {
     if (this.ghostPosition) {
       note.position = { ...this.ghostPosition };
-      note.basePosition = { ...this.ghostPosition }; // Koska käyttäjä raahasi sen tähän, se on uusi koti
+
+      // Koska käyttäjä raahasi sen visuaaliseen kohtaan (joka saattaa olla skaalattu),
+      // tallennetaan basePosition skaalaamattomana yhtenäisen pohjapiirroksen varalle:
+      note.basePosition = {
+        x: this.ghostPosition.x / this.noteScale,
+        y: this.ghostPosition.y / this.noteScale,
+      };
+
       event.source.setFreeDragPosition(this.ghostPosition);
       this.ghostPosition = null;
     }
