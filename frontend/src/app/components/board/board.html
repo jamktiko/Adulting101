@@ -136,7 +136,16 @@
     @if (ghostPosition !== null) {
       <div
         class="ghost-note"
-        [style.transform]="'translate3d(' + ghostPosition.x + 'px, ' + ghostPosition.y + 'px, 0)'"
+        [style.transform]="
+          'translate3d(' +
+          ghostPosition.x +
+          'px, ' +
+          ghostPosition.y +
+          'px, 0) scale(' +
+          noteScale +
+          ')'
+        "
+        [style.transform-origin]="'top left'"
       ></div>
     }
 
@@ -150,14 +159,16 @@
         class="draggable-note"
         style="position: absolute; left: 0; top: 0"
       >
-        <app-post-it-note
-          [title]="note.title"
-          [color]="note.color"
-          [route]="note.route"
-          [isDeletable]="note.isDeletable"
-          (deleteNote)="deleteCustomNote(note.id)"
-          (noteClick)="handleNoteClick(note)"
-        />
+        <div [style.transform]="'scale(' + noteScale + ')'" [style.transform-origin]="'top left'">
+          <app-post-it-note
+            [title]="note.title"
+            [color]="note.color"
+            [route]="note.route"
+            [isDeletable]="note.isDeletable"
+            (deleteNote)="deleteCustomNote(note.id)"
+            (noteClick)="handleNoteClick(note)"
+          />
+        </div>
       </div>
     }
   </div>
