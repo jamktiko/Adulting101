@@ -76,3 +76,53 @@
   background-color: #6c757d;
   cursor: not-allowed;
 }
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.item {
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.item h3 {
+  background-color: #fef08a;
+  border: 2px solid #fde047;
+  padding: 6px 12px;
+  border-radius: 3px;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #fef08a; /* changed to postit yellow backing */
+  border: 1px solid #fde047;
+  border-radius: 4px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background-color: #fde047;
+}
+
+.recurring-entry, .entry, .summary div {
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
