@@ -101,7 +101,7 @@ export class Board implements AfterViewInit, OnInit {
   // Resoluutiosta riippuva dynaaminen koko skaalaukselle
   noteScale = 1.0;
 
-  private readonly backendApiBase = 'http://localhost:3000/api';
+  private readonly backendApiBase = 'https://375jfhty7h.execute-api.eu-north-1.amazonaws.com/api';
 
   ngAfterViewInit() {
     // Varmistetaan minimaalisella viiveellä että DOM ja elementtien koot on laskettu
