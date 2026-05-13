@@ -333,16 +333,27 @@ export class Board implements AfterViewInit, OnInit {
   }
 
   confirmDelete() {
-    if (this.noteToDelete !== null) {
-      this.customNotes = this.customNotes.filter((note) => note.id !== this.noteToDelete);
+    if (this.noteToDelete === null) return;
 
-      // TÄRKEÄ: päivitä localStorage poistamisen jälkeen
-      if (this.isLoggedIn()) {
-        this.saveNotesToLocalStorage();
-      }
+    const note = this.customNotes.find((n) => n.id === this.noteToDelete);
 
-      this.noteToDelete = null;
+    // Poista UI:sta heti
+    this.customNotes = this.customNotes.filter((n) => n.id !== this.noteToDelete);
+
+    // Päivitä localStorage (tämä sinulla on jo)
+    if (this.isLoggedIn()) {
+      this.saveNotesToLocalStorage();
     }
+
+    // Poista myös tietokannasta, jos lapulla on dbId
+    if (this.isLoggedIn() && note?.dbId) {
+      this.deleteNoteFromDb(note.dbId).catch((e) => {
+        console.error('Tietokantapoisto epäonnistui', e);
+        // (Halutessa: voit palauttaa lapun UI:hin tässä)
+      });
+    }
+
+    this.noteToDelete = null;
   }
 
   cancelDelete() {
@@ -455,5 +466,17 @@ export class Board implements AfterViewInit, OnInit {
 
     const saved = await res.json();
     note.dbId = saved?._id; // server.js palauttaa subdokumentin, jossa yleensä on _id
+  }
+
+  private async deleteNoteFromDb(noteDbId: string): Promise<void> {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    const res = await fetch(
+      `${this.backendApiBase}/users/${encodeURIComponent(userId)}/notes/${encodeURIComponent(noteDbId)}`,
+      { method: 'DELETE' },
+    );
+
+    if (!res.ok) throw new Error(await res.text());
   }
 }
