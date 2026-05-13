@@ -129,7 +129,7 @@ export class Board implements AfterViewInit, OnInit {
       );
     };
 
-    // Alustetaan basePosition jos sitä ei ole vielä kertaakaan asetettu
+    // Alustetaan basePosition jos sitä ei ole vielä kertaakaan asetetu
     this.customNotes.forEach((note) => {
       if (!note.basePosition) {
         note.basePosition = { ...note.position };
