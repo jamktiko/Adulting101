@@ -5,6 +5,7 @@ import {
   ElementRef,
   HostListener,
   AfterViewInit,
+  OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +15,7 @@ import { Settings } from '../settings/settings';
 
 interface CustomNote {
   id: number;
+  dbId?: string; //tietokannan _id, jos tallennettu
   title: string;
   content?: string;
   color: string;
@@ -44,7 +46,7 @@ function snap(x: number, y: number, maxX: number, maxY: number) {
   templateUrl: './board.html',
   styleUrl: './board.css',
 })
-export class Board implements AfterViewInit {
+export class Board implements AfterViewInit, OnInit {
   @ViewChild('boardArea') boardRef!: ElementRef;
   private router = inject(Router);
 
@@ -95,6 +97,8 @@ export class Board implements AfterViewInit {
 
   isDragging = false;
   ghostPosition: { x: number; y: number } | null = null;
+
+  private readonly backendApiBase = 'http://localhost:3000/api';
 
   ngAfterViewInit() {
     // Varmistetaan minimaalisella viiveellä että DOM ja elementtien koot on laskettu
@@ -175,14 +179,35 @@ export class Board implements AfterViewInit {
     this.showAddForm = !this.showAddForm;
   }
 
-  addNote() {
-    if (this.newNote.title.trim() === '') return;
+  async addNote() {
+    const title = this.newNote.title.trim();
+    const content = (this.newNote.content ?? '').trim();
 
-    this.customNotes.push({
-      ...this.newNote,
+    if (!title) return;
+
+    // Jos haluat varmasti että DB-tallennus onnistuu, vaadi sisältöä:
+    if (!content) return;
+
+    const createdNote: CustomNote = {
       id: this.noteIdCounter++,
+      title,
+      content,
+      color: this.newNote.color,
       isDeletable: true,
       position: { x: 50, y: 350 }, // Oletussijainti uusille lapuille alareunaan
+    };
+
+    this.customNotes.push(createdNote);
+
+    if (this.isLoggedIn()) {
+      this.saveNotesToLocalStorage();
+      try {
+        await this.saveNoteToDb(createdNote);
+        this.saveNotesToLocalStorage(); // tallennetaan dbId mukaan
+      } catch (e) {
+        console.error('Tietokantatallennus epäonnistui (lappu jäi localStorageen)', e);
+      }
+    }
       basePosition: { x: 50, y: 350 },
     });
 
@@ -264,5 +289,84 @@ export class Board implements AfterViewInit {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('idToken');
     this.router.navigate(['/login']);
+  }
+
+  ngOnInit() {
+    if (!this.isLoggedIn()) return;
+    this.loadNotesFromLocalStorage();
+  }
+
+  private isLoggedIn(): boolean {
+    return !!localStorage.getItem('idToken');
+  }
+
+  private decodeJwtPayload(token: string): any | null {
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) return null;
+
+      const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+
+      return JSON.parse(atob(padded));
+    } catch {
+      return null;
+    }
+  }
+
+  private getUserId(): string | null {
+    const token = localStorage.getItem('idToken');
+    if (!token) return null;
+    const payload = this.decodeJwtPayload(token);
+    return payload?.sub ?? null; // Cogniton userSub
+  }
+
+  private storageKey(userId: string): string {
+    return `boardNotes_${userId}`;
+  }
+
+  private saveNotesToLocalStorage(): void {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    const deletableNotes = this.customNotes.filter((n) => n.isDeletable);
+    localStorage.setItem(this.storageKey(userId), JSON.stringify(deletableNotes));
+  }
+
+  private loadNotesFromLocalStorage(): void {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    const raw = localStorage.getItem(this.storageKey(userId));
+    if (!raw) return;
+
+    try {
+      const savedNotes = JSON.parse(raw) as CustomNote[];
+      const navigationNotes = this.customNotes.filter((n) => !n.isDeletable);
+
+      this.customNotes = [...navigationNotes, ...savedNotes];
+
+      const maxId = savedNotes.reduce((m, n) => Math.max(m, n.id), 0);
+      this.noteIdCounter = Math.max(this.noteIdCounter, maxId + 1);
+    } catch (e) {
+      console.error('Virhe localStorage-muistilapuissa', e);
+    }
+  }
+
+  private async saveNoteToDb(note: CustomNote): Promise<void> {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    const res = await fetch(`${this.backendApiBase}/users/${encodeURIComponent(userId)}/notes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // HUOM: backend tallentaa nyt vain title+content (väri/position ei säily ilman backend-muutosta)
+      body: JSON.stringify({ title: note.title, content: note.content ?? '' }),
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+
+    const saved = await res.json();
+    note.dbId = saved?._id; // server.js palauttaa subdokumentin, jossa yleensä on _id
   }
 }
