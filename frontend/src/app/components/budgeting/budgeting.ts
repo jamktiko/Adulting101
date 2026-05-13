@@ -8,8 +8,9 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
+import { Auth } from '../../services/auth';
 import { BudgetEntry } from '../../models/budget-entry';
 import { NewBudgetEntry } from '../../models/new-budget-entry';
 import { RecurringEntry } from '../../models/recurring-entry';
@@ -23,10 +24,13 @@ import { NewRecurringEntry } from '../../models/new-recurring-entry';
 })
 export class Budgeting implements OnInit {
   private dataService = inject(DataService);
+  private authService = inject(Auth);
+  private router = inject(Router);
 
   private fb = inject(FormBuilder);
 
   // Signaalit
+  userId = signal<string>('');
   currentMonth = signal(this.getCurrentMonth());
   budgetLimit = signal(0);
   entries = signal<BudgetEntry[]>([]);
@@ -110,12 +114,18 @@ export class Budgeting implements OnInit {
   }
 
   ngOnInit() {
-    this.loadBudget();
-    this.loadRecurringEntries();
+    const id = this.authService.getUserIdFromToken();
+    if (id) {
+      this.userId.set(id);
+      this.loadBudget();
+      this.loadRecurringEntries();
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   loadBudget() {
-    this.dataService.getBudget('testi-user-123', this.currentMonth()).subscribe((budget) => {
+    this.dataService.getBudget(this.userId(), this.currentMonth()).subscribe((budget) => {
       if (budget.entries) {
         this.entries.set(budget.entries);
       }
@@ -125,25 +135,25 @@ export class Budgeting implements OnInit {
 
   loadRecurringEntries() {
     this.dataService
-      .getRecurringEntries('testi-user-123')
+      .getRecurringEntries(this.userId())
       .subscribe((recurring) => this.recurringEntries.set(recurring));
   }
 
   addEntry(entry: NewBudgetEntry) {
     this.dataService
-      .addEntry('testi-user-123', this.currentMonth(), entry)
+      .addEntry(this.userId(), this.currentMonth(), entry)
       .subscribe(() => this.loadBudget());
   }
 
   deleteEntry(entryId: string) {
     this.dataService
-      .deleteEntry('testi-user-123', this.currentMonth(), entryId)
+      .deleteEntry(this.userId(), this.currentMonth(), entryId)
       .subscribe(() => this.loadBudget());
   }
 
   addRecurringEntry(entry: NewRecurringEntry) {
     this.dataService
-      .addRecurringEntry('testi-user-123', entry)
+      .addRecurringEntry(this.userId(), entry)
       .subscribe(() => this.loadRecurringEntries());
   }
 
@@ -153,7 +163,7 @@ export class Budgeting implements OnInit {
 
   updateBudgetLimit(newLimit: number) {
     this.dataService
-      .setBudgetLimit('testi-user-123', this.currentMonth(), newLimit)
+      .setBudgetLimit(this.userId(), this.currentMonth(), newLimit)
       .subscribe(() => this.budgetLimit.set(newLimit));
   }
 
