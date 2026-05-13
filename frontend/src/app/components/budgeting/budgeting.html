@@ -2,16 +2,19 @@
   <button class="back-button" routerLink="/bulletinboard">Takaisin etusivulle</button>
 </div>
 
-<div class="budget-container">
+<div class="budget-container items">
   <!-- Kuukauden valinta -->
-  <div class="month-selector">
-    <button (click)="changeMonth('prev')">← Edellinen</button>
-    <span>{{ currentMonth() }}</span>
-    <button (click)="changeMonth('next')">Seuraava →</button>
+  <div class="month-selector item" style="background-color: #f8e85a; border: 2px solid #eab308">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
+      <button (click)="changeMonth('prev')">← Edellinen</button>
+      <span style="font-weight: bold; font-size: 1.2rem">{{ currentMonth() }}</span>
+      <button (click)="changeMonth('next')">Seuraava →</button>
+    </div>
   </div>
 
   <!-- Budjetin raja -->
-  <div class="budget-limit">
+  <div class="budget-limit item" style="background-color: #f8e85a; border: 2px solid #eab308">
+    <h3>Budjetti</h3>
     <label for="monthlyBudget">Kuukausibudjetin raja:</label>
     <input
       id="monthlyBudget"
@@ -26,7 +29,8 @@
   </div>
 
   <!-- Yhteenveto -->
-  <div class="summary">
+  <div class="summary item" style="background-color: #f8e85a; border: 2px solid #eab308">
+    <h3>Yhteenveto</h3>
     <div class="income"><strong>Tulot:</strong> {{ totalIncome() }} €</div>
     <div class="expenses"><strong>Menot:</strong> {{ totalExpenses() }} €</div>
     <div class="balance" [class.negative]="balance() < 0">
@@ -35,7 +39,7 @@
   </div>
 
   <!-- Merkintöjen lista -->
-  <div class="entries">
+  <div class="entries item" style="background-color: #f8e85a; border: 2px solid #eab308">
     <h3>Merkinnät</h3>
     @for (entry of recurringEntries(); track entry._id) {
       <div class="recurring-entry">
@@ -54,7 +58,7 @@
   </div>
 
   <!-- Uusi merkintä -->
-  <div class="add-entry">
+  <div class="add-entry item" style="background-color: #f8e85a; border: 2px solid #eab308">
     <h3>Lisää merkintä</h3>
     <form [formGroup]="entryForm" (ngSubmit)="submitEntry()">
       <div class="form-group">

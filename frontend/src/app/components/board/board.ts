@@ -20,6 +20,7 @@ interface CustomNote {
   route?: string;
   isDeletable: boolean;
   position: { x: number; y: number };
+  basePosition?: { x: number; y: number };
 }
 
 const GRID_SIZE = 25;
@@ -65,6 +66,7 @@ export class Board implements AfterViewInit {
       route: '/topics',
       isDeletable: false,
       position: { x: 50, y: 150 },
+      basePosition: { x: 50, y: 150 },
     },
     {
       id: -2,
@@ -73,6 +75,7 @@ export class Board implements AfterViewInit {
       route: '/budgeting',
       isDeletable: false,
       position: { x: 250, y: 150 },
+      basePosition: { x: 250, y: 150 },
     },
     {
       id: -3,
@@ -81,6 +84,7 @@ export class Board implements AfterViewInit {
       route: '/entertainment',
       isDeletable: false,
       position: { x: 450, y: 150 },
+      basePosition: { x: 450, y: 150 },
     },
   ];
 
@@ -111,12 +115,6 @@ export class Board implements AfterViewInit {
     // Suojakerroin: ei päivitetä jos alue ei ole vielä kunnolla ruudulla
     if (rect.width === 0 || rect.height === 0) return;
 
-    // Järjestetään laput ensisijaisesti x-koordinaatin mukaan
-    const sortedNotes = [...this.customNotes].sort(
-      (a, b) => a.position.x - b.position.x || a.position.y - b.position.y,
-    );
-    const placed: { x: number; y: number }[] = [];
-
     const isOverlapping = (p1: { x: number; y: number }, p2: { x: number; y: number }) => {
       // Tarkistetaan menevätkö 150x150 laatikot päällekkäin
       return !(
@@ -127,8 +125,22 @@ export class Board implements AfterViewInit {
       );
     };
 
+    // Alustetaan basePosition jos sitä ei ole vielä kertaakaan asetettu
+    this.customNotes.forEach((note) => {
+      if (!note.basePosition) {
+        note.basePosition = { ...note.position };
+      }
+    });
+
+    // Järjestetään laput ensisijaisesti base-koordinaatin mukaan
+    const sortedNotes = [...this.customNotes].sort(
+      (a, b) => a.basePosition!.x - b.basePosition!.x || a.basePosition!.y - b.basePosition!.y,
+    );
+    const placed: { x: number; y: number }[] = [];
+
     sortedNotes.forEach((note) => {
-      let newPos = snap(note.position.x, note.position.y, rect.width, rect.height);
+      // Lasketaan sijainti alkuperäisen paikan perusteella, ei nykyisen rajoitetun sijainnin
+      let newPos = snap(note.basePosition!.x, note.basePosition!.y, rect.width, rect.height);
 
       let overlap = true;
       let failsafe = 0;
@@ -171,6 +183,7 @@ export class Board implements AfterViewInit {
       id: this.noteIdCounter++,
       isDeletable: true,
       position: { x: 50, y: 350 }, // Oletussijainti uusille lapuille alareunaan
+      basePosition: { x: 50, y: 350 },
     });
 
     this.newNote = { id: 0, title: '', content: '', color: '#fbcfe8' };
@@ -195,6 +208,7 @@ export class Board implements AfterViewInit {
   onDragEnd(event: CdkDragEnd, note: CustomNote) {
     if (this.ghostPosition) {
       note.position = { ...this.ghostPosition };
+      note.basePosition = { ...this.ghostPosition }; // Koska käyttäjä raahasi sen tähän, se on uusi koti
       event.source.setFreeDragPosition(this.ghostPosition);
       this.ghostPosition = null;
     }
