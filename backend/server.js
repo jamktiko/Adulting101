@@ -13,7 +13,7 @@ const {
   validateBudgetLimit, 
   handleValidationErrors 
 } = require('./middleware/validators');
-const sanitize = require('./utils/sanitizer');
+const { sanitize } = require('./utils/sanitizer');
 
 // --- MALLIEN TUONTI ---
 const User = require('./models/User');

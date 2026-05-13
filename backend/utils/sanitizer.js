@@ -8,4 +8,4 @@ const sanitize = (input) => {
     .substring(0, 500); // Rajaa pituus
 };
 
-module.exports = sanitize;
+module.exports = { sanitize };
