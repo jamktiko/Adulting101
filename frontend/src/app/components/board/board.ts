@@ -243,9 +243,6 @@ export class Board implements AfterViewInit {
     this.showSettingsModal = !this.showSettingsModal;
   }
 
-  navigateToLogin() {
-    this.router.navigate(['/login']);
-  }
   logout() {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('idToken');
