@@ -250,7 +250,13 @@ export class Board implements AfterViewInit, OnInit {
   confirmDelete() {
     if (this.noteToDelete !== null) {
       this.customNotes = this.customNotes.filter((note) => note.id !== this.noteToDelete);
-      this.noteToDelete = null; // Sulkee vahvistusikkunan
+
+      // TÄRKEÄ: päivitä localStorage poistamisen jälkeen
+      if (this.isLoggedIn()) {
+        this.saveNotesToLocalStorage();
+      }
+
+      this.noteToDelete = null;
     }
   }
 
