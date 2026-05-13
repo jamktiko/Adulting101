@@ -195,6 +195,7 @@ export class Board implements AfterViewInit, OnInit {
       color: this.newNote.color,
       isDeletable: true,
       position: { x: 50, y: 350 }, // Oletussijainti uusille lapuille alareunaan
+      basePosition: { x: 50, y: 350 },
     };
 
     this.customNotes.push(createdNote);
@@ -208,8 +209,6 @@ export class Board implements AfterViewInit, OnInit {
         console.error('Tietokantatallennus epäonnistui (lappu jäi localStorageen)', e);
       }
     }
-      basePosition: { x: 50, y: 350 },
-    });
 
     this.newNote = { id: 0, title: '', content: '', color: '#fbcfe8' };
     this.showAddForm = false;
