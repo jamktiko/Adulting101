@@ -31,3 +31,11 @@
 .header:hover .hover-text {
   display: inline;
 }
+
+.app-container.login-page .header:hover {
+  all: revert;
+}
+
+.app-container.login-page .header {
+  pointer-events: none;
+}

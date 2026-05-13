@@ -1,6 +1,5 @@
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
-// import { BoardComponent } from './components/board/board.component'; // 1. Add this import
+import { Component, inject, signal } from '@angular/core';
+import { RouterOutlet, RouterLink, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -8,12 +7,13 @@ import { RouterOutlet, RouterLink } from '@angular/router';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {}
+export class App {
+  isLoginPage = signal(false);
+  private router = inject(Router);
 
-// @Component({
-//   selector: 'app-root',
-//   imports: [BoardComponent], // 2. Add BoardComponent to the imports array
-//   templateUrl: './app.html',
-//   styleUrl: './app.css',
-// })
-// export class App {}
+  constructor() {
+    this.router.events.subscribe(() => {
+      this.isLoginPage.set(this.router.url === '/login');
+    });
+  }
+}
