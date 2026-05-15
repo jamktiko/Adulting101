@@ -17,8 +17,10 @@ export class DataService {
   private apiurlFinances = 'api/talous';
 
   // Oikean palvelimen osoitteet
-  private apiUrlBudget = 'api/budgets';
-  private apiUrlBudgetR = 'api/recurring';
+  private apiUrlBudget = 'http://localhost:3000/api/budgets';
+  // private apiUrlBudget = 'api/budgets';
+  private apiUrlBudgetR = 'http://localhost:3000/api/budgets/recurring';
+  // private apiUrlBudgetR = 'api/recurring';
 
   private http = inject(HttpClient);
 

@@ -17,7 +17,7 @@ const BudgetSchema = new mongoose.Schema(
   {
     user_id: { type: String, required: true },
     month: { type: String, required: true, match: /^\d{4}-\d{2}$/ }, // Esim. "2026-05"
-    monthlyBudgetLimit: { type: Number, default: 0, min: 0, max: 1000000 }, // Kokonaisbudjetin raja
+    monthlyBudgetLimit: { type: Number, default: 0, min: 0, max: 1000000 }, // Kuukausibudjetin raja
 
     entries: [
       {
@@ -43,7 +43,8 @@ const BudgetSchema = new mongoose.Schema(
       },
     ],
   },
-  { collection: 'budgeting' },
+  { versionKey: false },
+  { collection: 'budgets' },
 );
 
 module.exports = mongoose.model('Budget', BudgetSchema);

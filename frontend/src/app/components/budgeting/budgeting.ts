@@ -31,7 +31,7 @@ export class Budgeting implements OnInit {
 
   // Signaalit
   userId = signal<string>('');
-  currentMonth = signal(this.getCurrentMonth());
+  selectedMonth = signal(this.getCurrentMonth());
   budgetLimit = signal(0);
   entries = signal<BudgetEntry[]>([]);
   recurringEntries = signal<RecurringEntry[]>([]);
@@ -124,8 +124,15 @@ export class Budgeting implements OnInit {
     }
   }
 
-  loadBudget() {
-    this.dataService.getBudget(this.userId(), this.currentMonth()).subscribe((budget) => {
+  loadBudget(month?: string) {
+    // this.dataService.getBudget(this.userId(), this.selectedMonth()).subscribe((budget) => {
+    //   if (budget.entries) {
+    //     this.entries.set(budget.entries);
+    //   }
+    //   this.budgetLimit.set(budget.monthlyBudgetLimit || 0);
+    // });
+    const monthToLoad = month || this.selectedMonth();
+    this.dataService.getBudget(this.userId(), monthToLoad).subscribe((budget) => {
       if (budget.entries) {
         this.entries.set(budget.entries);
       }
@@ -140,15 +147,21 @@ export class Budgeting implements OnInit {
   }
 
   addEntry(entry: NewBudgetEntry) {
-    this.dataService
-      .addEntry(this.userId(), this.currentMonth(), entry)
-      .subscribe(() => this.loadBudget());
+    // this.dataService
+    //   .addEntry(this.userId(), this.selectedMonth(), entry)
+    //   .subscribe(() => this.loadBudget());
+    const month = this.selectedMonth();
+    this.dataService.addEntry(this.userId(), month, entry).subscribe(() => this.loadBudget(month));
   }
 
   deleteEntry(entryId: string) {
+    // this.dataService
+    //   .deleteEntry(this.userId(), this.selectedMonth(), entryId)
+    //   .subscribe(() => this.loadBudget());
+    const month = this.selectedMonth();
     this.dataService
-      .deleteEntry(this.userId(), this.currentMonth(), entryId)
-      .subscribe(() => this.loadBudget());
+      .deleteEntry(this.userId(), month, entryId)
+      .subscribe(() => this.loadBudget(month));
   }
 
   addRecurringEntry(entry: NewRecurringEntry) {
@@ -162,17 +175,22 @@ export class Budgeting implements OnInit {
   }
 
   updateBudgetLimit(newLimit: number) {
-    this.dataService
-      .setBudgetLimit(this.userId(), this.currentMonth(), newLimit)
-      .subscribe(() => this.budgetLimit.set(newLimit));
+    // this.dataService
+    //   .setBudgetLimit(this.userId(), this.selectedMonth(), newLimit)
+    //   .subscribe(() => this.budgetLimit.set(newLimit));
+    const month = this.selectedMonth();
+    this.dataService.setBudgetLimit(this.userId(), month, newLimit).subscribe(() => {
+      this.budgetLimit.set(newLimit);
+      this.loadBudget(month);
+    });
   }
 
   changeMonth(direction: 'prev' | 'next') {
-    const [year, month] = this.currentMonth().split('-').map(Number);
+    const [year, month] = this.selectedMonth().split('-').map(Number);
     const date = new Date(year, month - 1, 1);
     date.setMonth(date.getMonth() + (direction === 'next' ? 1 : -1));
     const newMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    this.currentMonth.set(newMonth);
+    this.selectedMonth.set(newMonth);
     this.loadBudget();
   }
 

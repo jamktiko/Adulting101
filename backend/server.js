@@ -7,11 +7,11 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { signUpUser, confirmUser, loginUser } = require('./utils/cognito');
 const authCheck = require('./middleware/authCheck');
-const { 
-  validateBudgetEntry, 
-  validateRecurringEntry, 
-  validateBudgetLimit, 
-  handleValidationErrors 
+const {
+  validateBudgetEntry,
+  validateRecurringEntry,
+  validateBudgetLimit,
+  handleValidationErrors,
 } = require('./middleware/validators');
 const { sanitize } = require('./utils/sanitizer');
 
@@ -33,8 +33,8 @@ app.use(helmet());
 // Rajataan pyyntöjen määrää tietoturvan vuoksi
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minuuttia
-  max: 100, 
-  message: 'Liian monta pyyntöä, yritä myöhemmin uudelleen'
+  max: 100,
+  message: 'Liian monta pyyntöä, yritä myöhemmin uudelleen',
 });
 app.use('/api/', limiter);
 
@@ -56,14 +56,17 @@ function shouldResetWeekly(lastResetDate) {
   if (!lastResetDate) return true;
   const now = new Date();
   const lastReset = new Date(lastResetDate);
-  
+
   const getWeek = (date) => {
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
     const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
     return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
   };
 
-  return getWeek(now) !== getWeek(lastReset) || now.getFullYear() !== lastReset.getFullYear();
+  return (
+    getWeek(now) !== getWeek(lastReset) ||
+    now.getFullYear() !== lastReset.getFullYear()
+  );
 }
 
 // --- REITIT (ROUTES) ---
@@ -92,11 +95,13 @@ app.get('/api/users/:userId/move-checklist', async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'Käyttäjää ei löytynyt' });
 
-    const response = allItems.map(item => ({
+    const response = allItems.map((item) => ({
       _id: item._id,
       name: item.name,
       category: item.category,
-      purchased: user.purchased_items ? user.purchased_items.includes(item._id) : false
+      purchased: user.purchased_items
+        ? user.purchased_items.includes(item._id)
+        : false,
     }));
 
     res.json(response);
@@ -110,8 +115,8 @@ app.patch('/api/users/:userId/toggle-move-item', async (req, res) => {
     const { userId } = req.params;
     const { itemId, isPurchased } = req.body;
 
-    const update = isPurchased 
-      ? { $addToSet: { purchased_items: itemId } } 
+    const update = isPurchased
+      ? { $addToSet: { purchased_items: itemId } }
       : { $pull: { purchased_items: itemId } };
 
     await User.updateOne({ _id: userId }, update);
@@ -136,10 +141,12 @@ app.get('/api/users/:userId/cleaning-checklist', async (req, res) => {
       await user.save();
     }
 
-    const response = allTasks.map(task => ({
+    const response = allTasks.map((task) => ({
       _id: task._id,
       name: task.name,
-      done: user.completed_cleaning_tasks ? user.completed_cleaning_tasks.includes(task._id) : false
+      done: user.completed_cleaning_tasks
+        ? user.completed_cleaning_tasks.includes(task._id)
+        : false,
     }));
 
     res.json(response);
@@ -153,8 +160,8 @@ app.patch('/api/users/:userId/toggle-cleaning-task', async (req, res) => {
     const { userId } = req.params;
     const { taskId, isDone } = req.body;
 
-    const update = isDone 
-      ? { $addToSet: { completed_cleaning_tasks: taskId } } 
+    const update = isDone
+      ? { $addToSet: { completed_cleaning_tasks: taskId } }
       : { $pull: { completed_cleaning_tasks: taskId } };
 
     await User.updateOne({ _id: userId }, update);
@@ -164,8 +171,19 @@ app.patch('/api/users/:userId/toggle-cleaning-task', async (req, res) => {
   }
 });
 
-// --- 2. BUDJETTI (PÄIVITETTY) ---
+// --- 2. BUDJETTI ---
 
+// Hae käyttäjän toistuvat budjettimerkinnät
+app.get('/api/budgets/recurring/:userId', async (req, res) => {
+  try {
+    const recurring = await RecurringEntry.find({ user_id: req.params.userId });
+    res.json(recurring);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Hae käyttäjän budjetti tietylle kuukaudelle
 app.get('/api/budgets/:userId/:month', async (req, res) => {
   try {
     const budget = await Budget.findOne({
@@ -178,45 +196,88 @@ app.get('/api/budgets/:userId/:month', async (req, res) => {
   }
 });
 
-app.patch('/api/budgets/:userId/:month/limit', 
-  validateBudgetLimit, 
-  handleValidationErrors, 
+// Päivitä kuukausibudjetin raja
+app.patch(
+  '/api/budgets/:userId/:month/limit',
+  validateBudgetLimit,
+  handleValidationErrors,
   async (req, res) => {
+    try {
+      const { monthlyBudgetLimit } = req.body;
+      const budget = await Budget.findOneAndUpdate(
+        { user_id: req.params.userId, month: req.params.month },
+        { monthlyBudgetLimit },
+        { upsert: true, returnDocument: 'after' },
+      );
+      res.json(budget);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// Lisää toistuva tulo tai meno
+app.post(
+  '/api/budgets/recurring/:userId',
+  validateRecurringEntry,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const cleanData = {
+        ...req.body,
+        category: sanitize(req.body.category),
+        description: sanitize(req.body.description),
+      };
+
+      const newRecurring = new RecurringEntry({
+        ...cleanData,
+        user_id: req.params.userId,
+      });
+
+      const saved = await newRecurring.save();
+      res.status(201).json(saved);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
+
+// Lisää yksittäinen tulo tai meno
+app.post(
+  '/api/budgets/:userId/:month/entry',
+  validateBudgetEntry,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const cleanData = {
+        ...req.body,
+        category: sanitize(req.body.category),
+        description: sanitize(req.body.description),
+      };
+
+      const budget = await Budget.findOneAndUpdate(
+        { user_id: req.params.userId, month: req.params.month },
+        { $push: { entries: cleanData } },
+        { upsert: true, returnDocument: 'after' },
+      );
+      res.status(201).json(budget);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
+
+// Poista toistuva budjettimerkintä
+app.delete('/api/budgets/recurring/:entryId', async (req, res) => {
   try {
-    const { monthlyBudgetLimit } = req.body;
-    const budget = await Budget.findOneAndUpdate(
-      { user_id: req.params.userId, month: req.params.month },
-      { monthlyBudgetLimit },
-      { upsert: true, returnDocument: 'after' },
-    );
-    res.json(budget);
+    await RecurringEntry.findByIdAndDelete(req.params.entryId);
+    res.json({ message: 'Merkintä poistettu' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/budgets/:userId/:month/entry', 
-  validateBudgetEntry, 
-  handleValidationErrors, 
-  async (req, res) => {
-  try {
-    const cleanData = {
-      ...req.body,
-      category: sanitize(req.body.category),
-      description: sanitize(req.body.description),
-    };
-
-    const budget = await Budget.findOneAndUpdate(
-      { user_id: req.params.userId, month: req.params.month },
-      { $push: { entries: cleanData } },
-      { upsert: true, returnDocument: 'after' },
-    );
-    res.status(201).json(budget);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
+// Poista budjettimerkintä
 app.delete('/api/budgets/:userId/:month/entry/:entryId', async (req, res) => {
   try {
     const budget = await Budget.findOneAndUpdate(
@@ -248,7 +309,7 @@ app.post('/api/users/:userId/notes', async (req, res) => {
     const user = await User.findOneAndUpdate(
       { _id: req.params.userId },
       { $push: { notes: { title, content } } },
-      { returnDocument: 'after' }
+      { returnDocument: 'after' },
     );
     res.status(201).json(user.notes[user.notes.length - 1]);
   } catch (err) {
@@ -258,10 +319,9 @@ app.post('/api/users/:userId/notes', async (req, res) => {
 
 app.delete('/api/users/:userId/notes/:noteId', async (req, res) => {
   try {
-    await User.findByIdAndUpdate(
-      req.params.userId,
-      { $pull: { notes: { _id: req.params.noteId } } }
-    );
+    await User.findByIdAndUpdate(req.params.userId, {
+      $pull: { notes: { _id: req.params.noteId } },
+    });
     res.json({ message: 'Muistilappu poistettu' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -282,13 +342,15 @@ app.post('/api/signup', async (req, res) => {
       password: 'COGNITO_HANDLES_THIS',
       purchased_items: [],
       completed_cleaning_tasks: [],
-      last_reset: new Date()
+      last_reset: new Date(),
     });
     await newUser.save();
 
     res.status(200).json({ message: 'Rekisteröityminen onnistui.' });
   } catch (error) {
-    res.status(400).json({ error: 'Rekisteröitymisvirhe', message: error.message });
+    res
+      .status(400)
+      .json({ error: 'Rekisteröitymisvirhe', message: error.message });
   }
 });
 

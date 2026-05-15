@@ -7,7 +7,7 @@
   <div class="month-selector item" style="background-color: #f8e85a; border: 2px solid #eab308">
     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
       <button (click)="changeMonth('prev')">← Edellinen</button>
-      <span style="font-weight: bold; font-size: 1.2rem">{{ currentMonth() }}</span>
+      <span style="font-weight: bold; font-size: 1.2rem">{{ selectedMonth() }}</span>
       <button (click)="changeMonth('next')">Seuraava →</button>
     </div>
   </div>
@@ -43,7 +43,7 @@
     <h3>Merkinnät</h3>
     @for (entry of recurringEntries(); track entry._id) {
       <div class="recurring-entry">
-        <span>{{ entry.category }}, ({{ entry.frequency }})</span>
+        <span>{{ entry.category }} ({{ entry.frequency }})</span>
         <span>{{ entry.amount }} €</span>
         <button (click)="deleteRecurringEntry(entry._id)">Poista</button>
       </div>
@@ -127,12 +127,6 @@
         ></textarea>
       </div>
 
-      <!-- Päivämäärä -->
-      <div class="form-group">
-        <label for="date">Päivämäärä:</label>
-        <input id="date" type="date" formControlName="date" />
-      </div>
-
       @if (entryForm.value.mode === 'recurring') {
         <div class="form-group">
           <label for="frequency">Toisto:</label>
@@ -141,16 +135,6 @@
             <option value="weekly">Viikoittain</option>
           </select>
         </div>
-
-        <!-- <div class="form-group">
-          <label for="startDate">Aloituspäivä:</label>
-          <input id="startDate" type="date" formControlName="startDate" />
-        </div>
-
-        <div class="form-group">
-          <label for="endDate">Lopetuspäivä (valinnainen):</label>
-          <input id="endDate" type="date" formControlName="endDate" />
-        </div> -->
       }
 
       <button type="submit" [disabled]="entryForm.invalid" class="submit-btn">

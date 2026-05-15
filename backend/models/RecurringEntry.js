@@ -26,7 +26,8 @@ const recurringSchema = new mongoose.Schema(
       maxlength: 250,
     },
   },
-  { collection: 'budgeting' },
+  { versionKey: false },
+  { collection: 'recurringentries' },
 );
 
 module.exports = mongoose.model('RecurringEntry', recurringSchema);
