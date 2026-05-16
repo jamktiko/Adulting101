@@ -18,8 +18,8 @@ const recurringSchema = new mongoose.Schema(
     },
     frequency: {
       type: String,
-      enum: ['monthly', 'weekly'],
-      default: 'monthly',
+      enum: ['kuukausittain', 'viikoittain'],
+      default: 'kuukausittain',
     },
     description: {
       type: String,

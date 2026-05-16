@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'; // http-olio hakee datan
 import { inject, Injectable, signal } from '@angular/core';
-import { Observable } from 'rxjs'; // data haetaan asynkronisesti observablena
+import { catchError, map, Observable, EMPTY, tap } from 'rxjs';
 import { Checklist } from '../models/checklist';
 import { Guide } from '../models/guide';
 import { NewBudgetEntry } from '../models/new-budget-entry';
@@ -18,9 +18,10 @@ export class DataService {
 
   // Oikean palvelimen osoitteet
   private apiUrlBudget = 'http://localhost:3000/api/budgets';
-  // private apiUrlBudget = 'api/budgets';
+  // private apiUrlBudget = 'https://375jfhty7h.execute-api.eu-north-1.amazonaws.com/api/budgets';
   private apiUrlBudgetR = 'http://localhost:3000/api/budgets/recurring';
-  // private apiUrlBudgetR = 'api/recurring';
+  // private apiUrlBudgetR =
+  //   'https://375jfhty7h.execute-api.eu-north-1.amazonaws.com/api/budgets/recurring';
 
   private http = inject(HttpClient);
 
@@ -43,9 +44,29 @@ export class DataService {
   }
 
   // Hae budjetti kuukaudelle
+  // toimii lokaalisti
   getBudget(userId: string, month: string): Observable<any> {
     return this.http.get(`${this.apiUrlBudget}/${userId}/${month}`);
   }
+
+  // getBudget(userId: string, month: string): Observable<any> {
+  //   return this.http.get(`${this.apiUrlBudget}/${userId}/${month}`).pipe(
+  //     tap((data) => console.log('API response:', data)),
+  //     catchError((err) => {
+  //       console.error('API error:', err);
+  //       return of([]);
+  //     }),
+  //   );
+  // }
+  // getBudget(userId: string, month: string): Observable<any> {
+  //   return this.http.get<any>(`${this.apiUrlBudget}/${userId}/${month}`).pipe(
+  //     tap((data) => console.log('API response:', data)),
+  //     catchError((err) => {
+  //       console.error('API error:', err);
+  //       return EMPTY;
+  //     }),
+  //   );
+  // }
 
   // Aseta kuukausibudjetin raja
   setBudgetLimit(userId: string, month: string, limit: number) {
@@ -65,9 +86,41 @@ export class DataService {
   }
 
   // Hae toistuvat budjettimerkinnät
+  // toimii lokaalisti
   getRecurringEntries(userId: string) {
     return this.http.get<RecurringEntry[]>(`${this.apiUrlBudgetR}/${userId}`);
   }
+
+  // getRecurringEntries(userId: string) {
+  //   return this.http.get<RecurringEntry[]>(`${this.apiUrlBudgetR}/${userId}`).pipe(
+  //     tap((data) => console.log('API response:', data)),
+  //     catchError((err) => {
+  //       console.error('API error:', err);
+  //       return of([]);
+  //     }),
+  //   );
+  // }
+  // getRecurringEntries(userId: string) {
+  //   return this.http.get<{ entries: RecurringEntry[] }>(`${this.apiUrlBudgetR}/${userId}`).pipe(
+  //     tap((data) => console.log('API response:', data)),
+  //     map((response) => response.entries), // Pura entries-taulukko
+  //     tap((data) => console.log('Purettu taulukko:', data)),
+  //     catchError((err) => {
+  //       console.error('API error:', err);
+  //       return EMPTY;
+  //     }),
+  //   );
+  // }
+  // getRecurringEntries(userId: string) {
+  //   return this.http.get<any>(`${this.apiUrlBudgetR}/${userId}`).pipe(
+  //     map((res) => (Array.isArray(res) ? res : (res.entries ?? []))),
+  //     tap((data) => console.log('mapped recurring:', data)),
+  //     catchError((err) => {
+  //       console.error('API error:', err);
+  //       return EMPTY;
+  //     }),
+  //   );
+  // }
 
   // Lisää toistuva budjettimerkintä
   addRecurringEntry(userId: string, entry: NewRecurringEntry) {

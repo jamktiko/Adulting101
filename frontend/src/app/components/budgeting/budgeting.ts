@@ -37,13 +37,29 @@ export class Budgeting implements OnInit {
   recurringEntries = signal<RecurringEntry[]>([]);
 
   // Lasketut arvot
-  totalIncome = computed(() =>
-    this.entries().reduce((sum, e) => (e.type === 'income' ? sum + e.amount : sum), 0),
-  );
+  totalIncome = computed(() => {
+    const oneTime = this.entries().reduce(
+      (sum, e) => (e.type === 'income' ? sum + e.amount : sum),
+      0,
+    );
+    const recurring = this.recurringEntries().reduce(
+      (sum, r) => (r.type === 'income' ? sum + this.recurringMonthlyEquivalent(r) : sum),
+      0,
+    );
+    return Math.round((oneTime + recurring) * 100) / 100;
+  });
 
-  totalExpenses = computed(() =>
-    this.entries().reduce((sum, e) => (e.type === 'expense' ? sum + e.amount : sum), 0),
-  );
+  totalExpenses = computed(() => {
+    const oneTime = this.entries().reduce(
+      (sum, e) => (e.type === 'expense' ? sum + e.amount : sum),
+      0,
+    );
+    const recurring = this.recurringEntries().reduce(
+      (sum, r) => (r.type === 'expense' ? sum + this.recurringMonthlyEquivalent(r) : sum),
+      0,
+    );
+    return Math.round((oneTime + recurring) * 100) / 100;
+  });
 
   balance = computed(() => this.totalIncome() - this.totalExpenses());
 
@@ -51,6 +67,10 @@ export class Budgeting implements OnInit {
     const limit = this.budgetLimit();
     return limit > 0 ? (this.totalExpenses() / limit) * 100 : 0;
   });
+
+  private recurringMonthlyEquivalent(entry: RecurringEntry): number {
+    return entry.frequency === 'kuukausittain' ? entry.amount : entry.amount * 4;
+  }
 
   // Lomakkeen FormGroup
   entryForm = this.fb.group({
@@ -68,7 +88,7 @@ export class Budgeting implements OnInit {
     amount: [0, [Validators.required, Validators.min(0.01), Validators.max(999999.99)]],
     description: ['', Validators.maxLength(250)],
     date: [new Date().toISOString().split('T')[0], Validators.required],
-    frequency: ['monthly', Validators.required],
+    frequency: ['kuukausittain', Validators.required],
   });
 
   noSpecialChars(control: AbstractControl): ValidationErrors | null {
@@ -97,7 +117,7 @@ export class Budgeting implements OnInit {
         category: formValue.category!,
         amount: Number(formValue.amount),
         description: formValue.description || '',
-        frequency: formValue.frequency as 'monthly' | 'weekly',
+        frequency: formValue.frequency as 'kuukausittain' | 'viikoittain',
       };
       this.addRecurringEntry(recurring);
     }
@@ -109,7 +129,7 @@ export class Budgeting implements OnInit {
       amount: 0,
       description: '',
       date: new Date().toISOString().split('T')[0],
-      frequency: 'monthly',
+      frequency: 'kuukausittain',
     });
   }
 
@@ -125,12 +145,6 @@ export class Budgeting implements OnInit {
   }
 
   loadBudget(month?: string) {
-    // this.dataService.getBudget(this.userId(), this.selectedMonth()).subscribe((budget) => {
-    //   if (budget.entries) {
-    //     this.entries.set(budget.entries);
-    //   }
-    //   this.budgetLimit.set(budget.monthlyBudgetLimit || 0);
-    // });
     const monthToLoad = month || this.selectedMonth();
     this.dataService.getBudget(this.userId(), monthToLoad).subscribe((budget) => {
       if (budget.entries) {
@@ -147,17 +161,11 @@ export class Budgeting implements OnInit {
   }
 
   addEntry(entry: NewBudgetEntry) {
-    // this.dataService
-    //   .addEntry(this.userId(), this.selectedMonth(), entry)
-    //   .subscribe(() => this.loadBudget());
     const month = this.selectedMonth();
     this.dataService.addEntry(this.userId(), month, entry).subscribe(() => this.loadBudget(month));
   }
 
   deleteEntry(entryId: string) {
-    // this.dataService
-    //   .deleteEntry(this.userId(), this.selectedMonth(), entryId)
-    //   .subscribe(() => this.loadBudget());
     const month = this.selectedMonth();
     this.dataService
       .deleteEntry(this.userId(), month, entryId)
@@ -175,9 +183,6 @@ export class Budgeting implements OnInit {
   }
 
   updateBudgetLimit(newLimit: number) {
-    // this.dataService
-    //   .setBudgetLimit(this.userId(), this.selectedMonth(), newLimit)
-    //   .subscribe(() => this.budgetLimit.set(newLimit));
     const month = this.selectedMonth();
     this.dataService.setBudgetLimit(this.userId(), month, newLimit).subscribe(() => {
       this.budgetLimit.set(newLimit);

@@ -15,13 +15,17 @@
   <!-- Budjetin raja -->
   <div class="budget-limit item" style="background-color: #f8e85a; border: 2px solid #eab308">
     <h3>Budjetti</h3>
-    <label for="monthlyBudget">Kuukausibudjetin raja:</label>
-    <input
-      id="monthlyBudget"
-      type="number"
-      [value]="budgetLimit()"
-      (change)="updateBudgetLimit(+$event.target.value)"
-    />
+    <div>
+      <label for="monthlyBudget">Kuukausibudjetin raja:</label>
+      <input
+        #budgetLimitInput
+        id="monthlyBudget"
+        type="number"
+        [value]="budgetLimit()"
+        style="margin: 0 0.7em"
+      />
+      <button (click)="updateBudgetLimit(+budgetLimitInput.value)">OK</button>
+    </div>
     <div class="progress-bar">
       <div class="progress" [style.width.%]="budgetPercentage()"></div>
     </div>
@@ -44,14 +48,22 @@
     @for (entry of recurringEntries(); track entry._id) {
       <div class="recurring-entry">
         <span>{{ entry.category }} ({{ entry.frequency }})</span>
-        <span>{{ entry.amount }} €</span>
+        @if (entry.type === 'expense') {
+          <span style="margin: 0 1em 0 0.5em">-{{ entry.amount }} €</span>
+        } @else {
+          <span style="margin: 0 1em 0 0.5em; color: green">{{ entry.amount }} €</span>
+        }
         <button (click)="deleteRecurringEntry(entry._id)">Poista</button>
       </div>
     }
     @for (entry of entries(); track entry._id) {
-      <div class="entry" [class.income]="entry.type === 'income'">
+      <div class="entry">
         <span>{{ entry.category }}</span>
-        <span>{{ entry.amount }} €</span>
+        @if (entry.type === 'expense') {
+          <span style="margin: 0 1em 0 0.5em">-{{ entry.amount }} €</span>
+        } @else {
+          <span style="margin: 0 1em 0 0.5em; color: green">{{ entry.amount }} €</span>
+        }
         <button (click)="deleteEntry(entry._id)">Poista</button>
       </div>
     }
@@ -131,8 +143,8 @@
         <div class="form-group">
           <label for="frequency">Toisto:</label>
           <select id="frequency" formControlName="frequency">
-            <option value="monthly">Kuukausittain</option>
-            <option value="weekly">Viikoittain</option>
+            <option value="kuukausittain">Kuukausittain</option>
+            <option value="viikoittain">Viikoittain</option>
           </select>
         </div>
       }
