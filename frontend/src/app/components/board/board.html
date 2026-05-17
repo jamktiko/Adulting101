@@ -77,9 +77,10 @@
           Uusi muistilappu
         </h3>
 
-        <label>Otsikko:</label>
+        <label for="newNoteTitle">Otsikko:</label>
         <div class="input-wrapper" style="margin-bottom: 12px">
           <input
+            id="newNoteTitle"
             type="text"
             [(ngModel)]="newNote.title"
             placeholder="Anna otsikko..."
@@ -87,9 +88,10 @@
           />
         </div>
 
-        <label>Sisältö (teksti):</label>
+        <label for="newNoteContent">Sisältö (teksti):</label>
         <div class="input-wrapper" style="margin-bottom: 12px">
           <textarea
+            id="newNoteContent"
             [(ngModel)]="newNote.content"
             placeholder="Mitä haluat muistaa?"
             rows="3"
@@ -104,9 +106,10 @@
           ></textarea>
         </div>
 
-        <label>Väri:</label>
+        <label for="newNoteColor">Väri:</label>
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px">
           <input
+            id="newNoteColor"
             type="color"
             [(ngModel)]="newNote.color"
             style="
@@ -244,6 +247,7 @@
           ></textarea>
 
           <label
+            for="magnifiedNoteColor"
             class="btn-post-it"
             style="
               position: absolute;
@@ -258,6 +262,7 @@
           >
             Vaihda väriä
             <input
+              id="magnifiedNoteColor"
               type="color"
               [(ngModel)]="magnifiedNote.color"
               style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none"

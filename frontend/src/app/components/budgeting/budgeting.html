@@ -22,7 +22,7 @@
         id="monthlyBudget"
         type="number"
         [value]="budgetLimit()"
-        style="margin: 0 0.7em"
+        style="margin: 0 0.7em; max-width: 80px"
       />
       <button (click)="updateBudgetLimit(+budgetLimitInput.value)">OK</button>
     </div>

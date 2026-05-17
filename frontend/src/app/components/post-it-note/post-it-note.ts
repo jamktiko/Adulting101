@@ -7,11 +7,9 @@ import { Component, input, output } from '@angular/core';
   styleUrl: './post-it-note.css',
 })
 export class PostItNote {
-  /* title, color ja route (navigointireitti) välitetään äitikomponentista */
   title = input.required<string>();
   color = input.required<string>();
   route = input<string>();
-  content = input<string>();
   isDeletable = input<boolean>(false);
 
   deleteNote = output<void>();

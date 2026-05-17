@@ -19,6 +19,7 @@ const { sanitize } = require('./utils/sanitizer');
 const User = require('./models/User');
 const Budget = require('./models/Budget');
 const RecurringEntry = require('./models/RecurringEntry');
+const Topic = require('./models/Topic');
 const Entertainment = require('./models/Entertainment');
 const MoveItem = require('./models/MoveItem');
 const CleanItem = require('./models/CleanItem');
@@ -371,6 +372,18 @@ app.post('/api/confirm', async (req, res) => {
     res.status(200).json({ message: 'Tili vahvistettu!' });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+// Arki-sivun kategorioiden sisällön hakeminen
+
+app.get('/api/topics/:category', async (req, res) => {
+  try {
+    const { category } = req.params;
+    const topics = await Topic.find({ category });
+    res.json(topics);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

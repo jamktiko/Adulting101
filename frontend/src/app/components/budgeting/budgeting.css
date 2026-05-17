@@ -10,6 +10,7 @@
   display: inline-block;
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease;
+  margin: 0.8em;
 }
 
 .back-button:hover {
@@ -128,4 +129,20 @@
   margin-bottom: 16px;
   word-break: break-word;
   overflow-wrap: break-word;
+}
+
+.budget-container {
+  margin: 4% 2% 5%;
+}
+
+@media only screen and (min-width: 768px) {
+  .budget-container {
+    margin: 3% 10% 4%;
+  }
+}
+
+@media only screen and (min-width: 1100px) {
+  .budget-container {
+    margin: 2.5% 15% 4%;
+  }
 }
