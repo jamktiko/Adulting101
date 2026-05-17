@@ -21,6 +21,7 @@
       type="number"
       [value]="budgetLimit()"
       (change)="updateBudgetLimit(+$event.target.value)"
+      style="max-width: 80px"
     />
     <div class="progress-bar">
       <div class="progress" [style.width.%]="budgetPercentage()"></div>

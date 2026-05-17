@@ -59,3 +59,18 @@
 .post-it-note:hover .delete-btn {
   opacity: 1;
 }
+
+.tape {
+  position: absolute;
+  height: 16px;
+  width: 56px;
+  border-radius: 2px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  top: -12px;
+}
+
+.tape-center {
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.4);
+}

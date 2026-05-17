@@ -79,15 +79,15 @@ export class Board implements AfterViewInit, OnInit {
       position: { x: 250, y: 150 },
       basePosition: { x: 250, y: 150 },
     },
-    {
-      id: -3,
-      title: 'Viihde',
-      color: '#78c3ff',
-      route: '/entertainment',
-      isDeletable: false,
-      position: { x: 450, y: 150 },
-      basePosition: { x: 450, y: 150 },
-    },
+    // {
+    //   id: -3,
+    //   title: 'Viihde',
+    //   color: '#78c3ff',
+    //   route: '/entertainment',
+    //   isDeletable: false,
+    //   position: { x: 450, y: 150 },
+    //   basePosition: { x: 450, y: 150 },
+    // },
   ];
 
   noteIdCounter = 1;

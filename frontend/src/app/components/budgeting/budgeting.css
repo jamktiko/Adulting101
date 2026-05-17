@@ -10,6 +10,7 @@
   display: inline-block;
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease;
+  margin: 0.8em;
 }
 
 .back-button:hover {
@@ -119,10 +120,27 @@
   background-color: #fde047;
 }
 
-.recurring-entry, .entry, .summary div {
+.recurring-entry,
+.entry,
+.summary div {
   background-color: rgba(255, 255, 255, 0.5);
   padding: 8px;
   border-radius: 4px;
   margin-bottom: 16px;
 }
 
+.budget-container {
+  margin: 4% 2% 5%;
+}
+
+@media only screen and (min-width: 768px) {
+  .budget-container {
+    margin: 3% 10% 4%;
+  }
+}
+
+@media only screen and (min-width: 1100px) {
+  .budget-container {
+    margin: 2.5% 15% 4%;
+  }
+}
