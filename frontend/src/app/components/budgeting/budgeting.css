@@ -146,3 +146,32 @@
     margin: 2.5% 15% 4%;
   }
 }
+
+.toggle-description {
+  background: none;
+  border: none;
+  color: #0066cc;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.toggle-description:hover {
+  color: #0052a3;
+}
+
+.description {
+  background-color: #fff9e6;
+  border-left: 3px solid #eab308;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+button {
+  cursor: pointer;
+}

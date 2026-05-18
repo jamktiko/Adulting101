@@ -55,7 +55,19 @@
             >{{ entry.amount | number: '1.2-2' }} €</span
           >
         }
-        <button (click)="deleteRecurringEntry(entry._id)">Poista</button>
+        <button (click)="deleteRecurringEntry(entry._id)" style="float: right">Poista</button>
+
+        @if (entry.description && entry.description.trim() !== '') {
+          <button (click)="toggleDescription(entry._id)" class="toggle-description">
+            {{ isDescriptionExpanded(entry._id) ? 'Piilota lisätiedot' : 'Näytä lisätiedot' }}
+          </button>
+
+          @if (isDescriptionExpanded(entry._id)) {
+            <div class="description">
+              {{ entry.description }}
+            </div>
+          }
+        }
       </div>
     }
     @for (entry of entries(); track entry._id) {
@@ -68,7 +80,19 @@
             >{{ entry.amount | number: '1.2-2' }} €</span
           >
         }
-        <button (click)="deleteEntry(entry._id)">Poista</button>
+        <button (click)="deleteEntry(entry._id)" style="float: right">Poista</button>
+
+        @if (entry.description && entry.description.trim() !== '') {
+          <button (click)="toggleDescription(entry._id)" class="toggle-description">
+            {{ isDescriptionExpanded(entry._id) ? 'Piilota lisätiedot' : 'Näytä lisätiedot' }}
+          </button>
+
+          @if (isDescriptionExpanded(entry._id)) {
+            <div class="description">
+              {{ entry.description }}
+            </div>
+          }
+        }
       </div>
     }
   </div>

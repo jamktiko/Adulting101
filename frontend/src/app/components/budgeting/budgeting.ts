@@ -35,6 +35,7 @@ export class Budgeting implements OnInit {
   budgetLimit = signal(0);
   entries = signal<BudgetEntry[]>([]);
   recurringEntries = signal<RecurringEntry[]>([]);
+  expandedDescriptions = signal<Set<string>>(new Set());
 
   // Lasketut arvot
   totalIncome = computed(() => {
@@ -226,5 +227,23 @@ export class Budgeting implements OnInit {
   private getCurrentMonth(): string {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  // Avaa/sulje merkinnän kuvaus
+  toggleDescription(entryId: string) {
+    this.expandedDescriptions.update((set) => {
+      const newSet = new Set(set);
+      if (newSet.has(entryId)) {
+        newSet.delete(entryId);
+      } else {
+        newSet.add(entryId);
+      }
+      return newSet;
+    });
+  }
+
+  // Tarkista onko merkinnän kuvaus auki
+  isDescriptionExpanded(entryId: string): boolean {
+    return this.expandedDescriptions().has(entryId);
   }
 }
