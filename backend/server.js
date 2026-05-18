@@ -367,19 +367,13 @@ app.delete('/api/users/:userId/notes/:noteId', async (req, res) => {
 app.post('/api/signup', async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    
-    const cleanData = {
-      username: sanitize(username),
-      email: sanitize(email),
-      password: sanitize(password),
-    };
 
-    const cognitoResult = await signUpUser(cleanData);
+    const cognitoResult = await signUpUser(req.body);
 
     const newUser = new User({
       _id: cognitoResult.UserSub,
-      username: cleanData.username,
-      email: cleanData.email,
+      username: req.body.username,
+      email: req.body.email,
       password: 'COGNITO_HANDLES_THIS',
       purchased_items: [],
       completed_cleaning_tasks: [],
@@ -413,13 +407,8 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
-    const cleanData = {
-      username: sanitize(username),
-      password: sanitize(password),
-    };
 
-    const tokens = await loginUser(cleanData);
+    const tokens = await loginUser(req.body);
     res.status(200).json(tokens);
   } catch (error) {
     res.status(401).json({ error: 'Kirjautumisvirhe', message: error.message });
@@ -444,13 +433,8 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/confirm', async (req, res) => {
   try {
     const { username, code } = req.body;
-    
-    const cleanData = {
-      username: sanitize(username),
-      code: sanitize(code),
-    };
 
-    await confirmUser(cleanData);
+    await confirmUser(req.body);
     res.status(200).json({ message: 'Tili vahvistettu!' });
   } catch (error) {
     res.status(400).json({ error: error.message });
