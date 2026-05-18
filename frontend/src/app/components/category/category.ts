@@ -1,6 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
+import { TopicData } from '../../models/topic-data';
 
 @Component({
   selector: 'app-category',
@@ -13,7 +14,7 @@ export class Category {
   private dataService = inject(DataService);
 
   category = this.dataService.categoryTitle;
-  content = signal<any>(null);
+  topicData = signal<TopicData[]>([]);
   loading = signal(false);
   categoryColor = signal<string>('#fef08a'); // default yellow
   categoryBorderColor = signal<string>('#fde047'); // default yellow border
@@ -39,10 +40,11 @@ export class Category {
 
       this.loading.set(true);
 
-      // Kutsutaan servicen metodia ja jos dataa saadaan, se sijoitetaan content-signaalimuuttujaan
+      // Kutsutaan servicen metodia ja jos dataa saadaan, se sijoitetaan topicData-signaalimuuttujaan
       this.dataService.getTopicData(categoryParam).subscribe({
         next: (data) => {
-          this.content.set(data);
+          this.topicData.set(data);
+          // console.log(data);
           this.loading.set(false);
         },
         error: () => this.loading.set(false),

@@ -18,6 +18,19 @@ export interface GenericResponse {
 export class Auth {
   private apiUrl = 'https://375jfhty7h.execute-api.eu-north-1.amazonaws.com/api';
 
+  getUserIdFromToken(): string | null {
+    const idToken = localStorage.getItem('idToken');
+    if (!idToken) return null;
+
+    try {
+      const payload = idToken.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded.sub; // user_id on tallennettu sub claimiin
+    } catch {
+      return null;
+    }
+  }
+
   signup(username: string, email: string, password: string): Observable<GenericResponse> {
     return from(
       fetch(`${this.apiUrl}/signup`, {

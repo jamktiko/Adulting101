@@ -5,6 +5,7 @@
   /* background-color poistettu, jotta globaali tausta näkyy */
   overflow: hidden;
   padding: 20px;
+  box-sizing: border-box; /* Estää 100% width + padding aiheuttaman pystyskrollin */
 }
 
 .top-controls {
@@ -30,6 +31,14 @@
   position: relative;
   width: 100%;
   height: 600px;
+  box-sizing: border-box;
+  background-color: rgba(222, 184, 135, 0.3); /* Kevyt, lämmin korkkitaustan sävy */
+  border: 16px solid #6b4423; /* Tummanruskea puunvärinen kehys */
+  border-radius: 8px;
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.3),
+    /* Varjo laudan alle */ inset 0 0 15px rgba(0, 0, 0, 0.5),
+    /* Sisäinen varjo kehyksestä tauluun */ inset 0 0 50px rgba(139, 69, 19, 0.2); /* Lämmin sävy taulun sisäreunoilla */
 }
 
 /* CdkDrag container tyyli */

@@ -1,21 +1,21 @@
+<button class="back-button" routerLink="/topics">Takaisin aiheisiin</button>
+
 <div class="category">
-  <button class="back-button" routerLink="/topics">Takaisin aiheisiin</button>
   @if (loading()) {
     <p>Ladataan...</p>
-  } @else if (content()) {
+  } @else if (topicData()) {
     <h2>{{ category() }}</h2>
     <div class="items">
-      @for (item of content(); track item.id) {
+      @for (item of topicData(); track item._id) {
         <div
           class="item"
           [style.background-color]="categoryColor()"
           [style.border]="'2px solid ' + categoryBorderColor()"
         >
-          @if (item.title) {
-            <h3>{{ item.title }}</h3>
-          }
+          <h3>{{ item.title }}</h3>
+
           <ul>
-            @for (line of item.items || item.content; track line) {
+            @for (line of item.content; track line) {
               <li>{{ line }}</li>
             }
           </ul>

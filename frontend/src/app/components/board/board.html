@@ -1,7 +1,6 @@
 <div class="board">
   <!-- Yläpalkin navigaatiot ym. -->
   <div class="top-controls">
-    <button (click)="navigateToLogin()">Kirjaudu</button>
     <button (click)="logout()">Kirjaudu ulos</button>
     <button (click)="toggleSettingsModal()">Asetukset</button>
     <button (click)="toggleAddForm()">Uusi muistilappu</button>
@@ -78,9 +77,10 @@
           Uusi muistilappu
         </h3>
 
-        <label>Otsikko:</label>
+        <label for="newNoteTitle">Otsikko:</label>
         <div class="input-wrapper" style="margin-bottom: 12px">
           <input
+            id="newNoteTitle"
             type="text"
             [(ngModel)]="newNote.title"
             placeholder="Anna otsikko..."
@@ -88,9 +88,10 @@
           />
         </div>
 
-        <label>Sisältö (teksti):</label>
+        <label for="newNoteContent">Sisältö (teksti):</label>
         <div class="input-wrapper" style="margin-bottom: 12px">
           <textarea
+            id="newNoteContent"
             [(ngModel)]="newNote.content"
             placeholder="Mitä haluat muistaa?"
             rows="3"
@@ -105,9 +106,10 @@
           ></textarea>
         </div>
 
-        <label>Väri:</label>
+        <label for="newNoteColor">Väri:</label>
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px">
           <input
+            id="newNoteColor"
             type="color"
             [(ngModel)]="newNote.color"
             style="
@@ -137,7 +139,16 @@
     @if (ghostPosition !== null) {
       <div
         class="ghost-note"
-        [style.transform]="'translate3d(' + ghostPosition.x + 'px, ' + ghostPosition.y + 'px, 0)'"
+        [style.transform]="
+          'translate3d(' +
+          ghostPosition.x +
+          'px, ' +
+          ghostPosition.y +
+          'px, 0) scale(' +
+          noteScale +
+          ')'
+        "
+        [style.transform-origin]="'top left'"
       ></div>
     }
 
@@ -151,14 +162,16 @@
         class="draggable-note"
         style="position: absolute; left: 0; top: 0"
       >
-        <app-post-it-note
-          [title]="note.title"
-          [color]="note.color"
-          [route]="note.route"
-          [isDeletable]="note.isDeletable"
-          (deleteNote)="deleteCustomNote(note.id)"
-          (noteClick)="handleNoteClick(note)"
-        />
+        <div [style.transform]="'scale(' + noteScale + ')'" [style.transform-origin]="'top left'">
+          <app-post-it-note
+            [title]="note.title"
+            [color]="note.color"
+            [route]="note.route"
+            [isDeletable]="note.isDeletable"
+            (deleteNote)="deleteCustomNote(note.id)"
+            (noteClick)="handleNoteClick(note)"
+          />
+        </div>
       </div>
     }
   </div>
@@ -234,6 +247,7 @@
           ></textarea>
 
           <label
+            for="magnifiedNoteColor"
             class="btn-post-it"
             style="
               position: absolute;
@@ -248,6 +262,7 @@
           >
             Vaihda väriä
             <input
+              id="magnifiedNoteColor"
               type="color"
               [(ngModel)]="magnifiedNote.color"
               style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none"

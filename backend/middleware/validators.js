@@ -13,7 +13,7 @@ const validateRecurringEntry = [
   body('category').isLength({ min: 1, max: 50 }).trim().escape(),
   body('amount').isFloat({ min: 0.01, max: 999999.99 }),
   body('description').isLength({ max: 250 }).trim().escape(),
-  body('frequency').isIn(['monthly', 'weekly']),
+  body('frequency').isIn(['kuukausittain', 'viikoittain']),
 ];
 
 const validateBudgetLimit = body('monthlyBudgetLimit').isFloat({

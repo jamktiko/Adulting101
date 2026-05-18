@@ -18,15 +18,16 @@ const recurringSchema = new mongoose.Schema(
     },
     frequency: {
       type: String,
-      enum: ['monthly', 'weekly'],
-      default: 'monthly',
+      enum: ['kuukausittain', 'viikoittain'],
+      default: 'kuukausittain',
     },
     description: {
       type: String,
       maxlength: 250,
     },
   },
-  { collection: 'budgeting' },
+  { versionKey: false },
+  { collection: 'recurringentries' },
 );
 
 module.exports = mongoose.model('RecurringEntry', recurringSchema);

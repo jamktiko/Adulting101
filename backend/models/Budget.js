@@ -1,23 +1,10 @@
-// alkuperäinen
-// const mongoose = require('mongoose');
-
-// const BudgetSchema = new mongoose.Schema({
-//   user_id: { type: String, required: true }, // Tämä linkittää budjetin testi-user-123:een
-//   type: { type: String, enum: ['income', 'expense'], required: true },
-//   category: String,
-//   amount: Number,
-//   date: { type: Date, default: Date.now }
-// }, { collection: 'budgeting' });
-
-// module.exports = mongoose.model('Budget', BudgetSchema);
-
 const mongoose = require('mongoose');
 
 const BudgetSchema = new mongoose.Schema(
   {
     user_id: { type: String, required: true },
     month: { type: String, required: true, match: /^\d{4}-\d{2}$/ }, // Esim. "2026-05"
-    monthlyBudgetLimit: { type: Number, default: 0, min: 0, max: 1000000 }, // Kokonaisbudjetin raja
+    monthlyBudgetLimit: { type: Number, default: 0, min: 0, max: 1000000 }, // Kuukausibudjetin raja
 
     entries: [
       {
@@ -43,7 +30,8 @@ const BudgetSchema = new mongoose.Schema(
       },
     ],
   },
-  { collection: 'budgeting' },
+  { versionKey: false },
+  { collection: 'budgets' },
 );
 
 module.exports = mongoose.model('Budget', BudgetSchema);

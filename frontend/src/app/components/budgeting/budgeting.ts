@@ -8,8 +8,9 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
+import { Auth } from '../../services/auth';
 import { BudgetEntry } from '../../models/budget-entry';
 import { NewBudgetEntry } from '../../models/new-budget-entry';
 import { RecurringEntry } from '../../models/recurring-entry';
@@ -23,23 +24,42 @@ import { NewRecurringEntry } from '../../models/new-recurring-entry';
 })
 export class Budgeting implements OnInit {
   private dataService = inject(DataService);
+  private authService = inject(Auth);
+  private router = inject(Router);
 
   private fb = inject(FormBuilder);
 
   // Signaalit
-  currentMonth = signal(this.getCurrentMonth());
+  userId = signal<string>('');
+  selectedMonth = signal(this.getCurrentMonth());
   budgetLimit = signal(0);
   entries = signal<BudgetEntry[]>([]);
   recurringEntries = signal<RecurringEntry[]>([]);
 
   // Lasketut arvot
-  totalIncome = computed(() =>
-    this.entries().reduce((sum, e) => (e.type === 'income' ? sum + e.amount : sum), 0),
-  );
+  totalIncome = computed(() => {
+    const oneTime = this.entries().reduce(
+      (sum, e) => (e.type === 'income' ? sum + e.amount : sum),
+      0,
+    );
+    const recurring = this.recurringEntries().reduce(
+      (sum, r) => (r.type === 'income' ? sum + this.recurringMonthlyEquivalent(r) : sum),
+      0,
+    );
+    return Math.round((oneTime + recurring) * 100) / 100;
+  });
 
-  totalExpenses = computed(() =>
-    this.entries().reduce((sum, e) => (e.type === 'expense' ? sum + e.amount : sum), 0),
-  );
+  totalExpenses = computed(() => {
+    const oneTime = this.entries().reduce(
+      (sum, e) => (e.type === 'expense' ? sum + e.amount : sum),
+      0,
+    );
+    const recurring = this.recurringEntries().reduce(
+      (sum, r) => (r.type === 'expense' ? sum + this.recurringMonthlyEquivalent(r) : sum),
+      0,
+    );
+    return Math.round((oneTime + recurring) * 100) / 100;
+  });
 
   balance = computed(() => this.totalIncome() - this.totalExpenses());
 
@@ -47,6 +67,10 @@ export class Budgeting implements OnInit {
     const limit = this.budgetLimit();
     return limit > 0 ? (this.totalExpenses() / limit) * 100 : 0;
   });
+
+  private recurringMonthlyEquivalent(entry: RecurringEntry): number {
+    return entry.frequency === 'kuukausittain' ? entry.amount : entry.amount * 4;
+  }
 
   // Lomakkeen FormGroup
   entryForm = this.fb.group({
@@ -64,7 +88,7 @@ export class Budgeting implements OnInit {
     amount: [0, [Validators.required, Validators.min(0.01), Validators.max(999999.99)]],
     description: ['', Validators.maxLength(250)],
     date: [new Date().toISOString().split('T')[0], Validators.required],
-    frequency: ['monthly', Validators.required],
+    frequency: ['kuukausittain', Validators.required],
   });
 
   noSpecialChars(control: AbstractControl): ValidationErrors | null {
@@ -93,7 +117,7 @@ export class Budgeting implements OnInit {
         category: formValue.category!,
         amount: Number(formValue.amount),
         description: formValue.description || '',
-        frequency: formValue.frequency as 'monthly' | 'weekly',
+        frequency: formValue.frequency as 'kuukausittain' | 'viikoittain',
       };
       this.addRecurringEntry(recurring);
     }
@@ -105,17 +129,24 @@ export class Budgeting implements OnInit {
       amount: 0,
       description: '',
       date: new Date().toISOString().split('T')[0],
-      frequency: 'monthly',
+      frequency: 'kuukausittain',
     });
   }
 
   ngOnInit() {
-    this.loadBudget();
-    this.loadRecurringEntries();
+    const id = this.authService.getUserIdFromToken();
+    if (id) {
+      this.userId.set(id);
+      this.loadBudget();
+      this.loadRecurringEntries();
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
-  loadBudget() {
-    this.dataService.getBudget('testi-user-123', this.currentMonth()).subscribe((budget) => {
+  loadBudget(month?: string) {
+    const monthToLoad = month || this.selectedMonth();
+    this.dataService.getBudget(this.userId(), monthToLoad).subscribe((budget) => {
       if (budget.entries) {
         this.entries.set(budget.entries);
       }
@@ -125,25 +156,25 @@ export class Budgeting implements OnInit {
 
   loadRecurringEntries() {
     this.dataService
-      .getRecurringEntries('testi-user-123')
+      .getRecurringEntries(this.userId())
       .subscribe((recurring) => this.recurringEntries.set(recurring));
   }
 
   addEntry(entry: NewBudgetEntry) {
-    this.dataService
-      .addEntry('testi-user-123', this.currentMonth(), entry)
-      .subscribe(() => this.loadBudget());
+    const month = this.selectedMonth();
+    this.dataService.addEntry(this.userId(), month, entry).subscribe(() => this.loadBudget(month));
   }
 
   deleteEntry(entryId: string) {
+    const month = this.selectedMonth();
     this.dataService
-      .deleteEntry('testi-user-123', this.currentMonth(), entryId)
-      .subscribe(() => this.loadBudget());
+      .deleteEntry(this.userId(), month, entryId)
+      .subscribe(() => this.loadBudget(month));
   }
 
   addRecurringEntry(entry: NewRecurringEntry) {
     this.dataService
-      .addRecurringEntry('testi-user-123', entry)
+      .addRecurringEntry(this.userId(), entry)
       .subscribe(() => this.loadRecurringEntries());
   }
 
@@ -152,17 +183,19 @@ export class Budgeting implements OnInit {
   }
 
   updateBudgetLimit(newLimit: number) {
-    this.dataService
-      .setBudgetLimit('testi-user-123', this.currentMonth(), newLimit)
-      .subscribe(() => this.budgetLimit.set(newLimit));
+    const month = this.selectedMonth();
+    this.dataService.setBudgetLimit(this.userId(), month, newLimit).subscribe(() => {
+      this.budgetLimit.set(newLimit);
+      this.loadBudget(month);
+    });
   }
 
   changeMonth(direction: 'prev' | 'next') {
-    const [year, month] = this.currentMonth().split('-').map(Number);
+    const [year, month] = this.selectedMonth().split('-').map(Number);
     const date = new Date(year, month - 1, 1);
     date.setMonth(date.getMonth() + (direction === 'next' ? 1 : -1));
     const newMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    this.currentMonth.set(newMonth);
+    this.selectedMonth.set(newMonth);
     this.loadBudget();
   }
 
