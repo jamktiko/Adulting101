@@ -7,14 +7,14 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { signUpUser, confirmUser, loginUser } = require('./utils/cognito');
 const authCheck = require('./middleware/authCheck');
-const { 
-  validateBudgetEntry, 
-  validateRecurringEntry, 
-  validateBudgetLimit, 
-  validateSignup, 
+const {
+  validateBudgetEntry,
+  validateRecurringEntry,
+  validateBudgetLimit,
+  validateSignup,
   validateLogin,
   validateConfirm,
-  handleValidationErrors 
+  handleValidationErrors,
 } = require('./middleware/validators');
 const { sanitize } = require('./utils/sanitizer');
 
@@ -334,68 +334,89 @@ app.delete('/api/users/:userId/notes/:noteId', async (req, res) => {
 
 // --- 4. AUTENTIKOINTI ---
 
-app.post('/api/signup', validateSignup, handleValidationErrors, async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    
-    const cleanData = {
-      username: sanitize(username),
-      email: sanitize(email),
-      password: sanitize(password),
-    };
+app.post(
+  '/api/signup',
+  validateSignup,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { username, email, password } = req.body;
 
-    const cognitoResult = await signUpUser(cleanData);
+      const cleanData = {
+        username: sanitize(username),
+        email: sanitize(email),
+        password: sanitize(password),
+      };
 
-    const newUser = new User({
-      _id: cognitoResult.UserSub,
-      username: cleanData.username,
-      email: cleanData.email,
-      password: 'COGNITO_HANDLES_THIS',
-      purchased_items: [],
-      completed_cleaning_tasks: [],
-      last_reset: new Date(),
-    });
-    await newUser.save();
+      const cognitoResult = await signUpUser(
+        cleanData.username,
+        cleanData.email,
+        cleanData.password,
+      );
 
-    res.status(200).json({ message: 'Rekisteröityminen onnistui.' });
-  } catch (error) {
-    res
-      .status(400)
-      .json({ error: 'Rekisteröitymisvirhe', message: error.message });
-  }
-});
+      const newUser = new User({
+        _id: cognitoResult.UserSub,
+        username: cleanData.username,
+        email: cleanData.email,
+        password: 'COGNITO_HANDLES_THIS',
+        purchased_items: [],
+        completed_cleaning_tasks: [],
+        last_reset: new Date(),
+      });
+      await newUser.save();
 
-app.post('/api/login', validateLogin, handleValidationErrors, async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    
-    const cleanData = {
-      username: sanitize(username),
-      password: sanitize(password),
-    };
+      res.status(200).json({ message: 'Rekisteröityminen onnistui.' });
+    } catch (error) {
+      res
+        .status(400)
+        .json({ error: 'Rekisteröitymisvirhe', message: error.message });
+    }
+  },
+);
 
-    const tokens = await loginUser(cleanData);
-    res.status(200).json(tokens);
-  } catch (error) {
-    res.status(401).json({ error: 'Kirjautumisvirhe', message: error.message });
-  }
-});
+app.post(
+  '/api/login',
+  validateLogin,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { username, password } = req.body;
 
-app.post('/api/confirm', validateConfirm, handleValidationErrors, async (req, res) => {
-  try {
-    const { username, code } = req.body;
-    
-    const cleanData = {
-      username: sanitize(username),
-      code: sanitize(code),
-    };
+      const cleanData = {
+        username: sanitize(username),
+        password: sanitize(password),
+      };
 
-    await confirmUser(cleanData);
-    res.status(200).json({ message: 'Tili vahvistettu!' });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+      const tokens = await loginUser(cleanData.username, cleanData.password);
+      res.status(200).json(tokens);
+    } catch (error) {
+      res
+        .status(401)
+        .json({ error: 'Kirjautumisvirhe', message: error.message });
+    }
+  },
+);
+
+app.post(
+  '/api/confirm',
+  validateConfirm,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { username, code } = req.body;
+
+      const cleanData = {
+        username: sanitize(username),
+        code: sanitize(code),
+      };
+
+      await confirmUser(cleanData.username, cleanData.code);
+      res.status(200).json({ message: 'Tili vahvistettu!' });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  },
+);
 
 // Arki-sivun kategorioiden sisällön hakeminen
 
