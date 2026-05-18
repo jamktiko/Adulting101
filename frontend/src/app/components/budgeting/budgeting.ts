@@ -85,7 +85,15 @@ export class Budgeting implements OnInit {
         this.noSpecialChars.bind(this),
       ],
     ],
-    amount: [0, [Validators.required, Validators.min(0.01), Validators.max(999999.99)]],
+    amount: [
+      0,
+      [
+        Validators.required,
+        Validators.min(0.01),
+        Validators.max(999999.99),
+        this.onlyTwoDecimals.bind(this),
+      ],
+    ],
     description: ['', Validators.maxLength(250)],
     date: [new Date().toISOString().split('T')[0], Validators.required],
     frequency: ['kuukausittain', Validators.required],
@@ -97,16 +105,32 @@ export class Budgeting implements OnInit {
     return regex.test(control.value) ? null : { specialChars: true };
   }
 
+  onlyTwoDecimals(control: AbstractControl): ValidationErrors | null {
+    const val = control.value;
+    if (val === null || val === undefined || val === '') return null;
+    const str = String(val).trim();
+    // Salli vain numerot ja pisteen/pilkun jälkeen vain kaksi numeroa
+    const regex = /^\d+(?:[.,]\d{1,2})?$/;
+    return regex.test(str) ? null : { tooManyDecimals: true };
+  }
+
   submitEntry() {
     if (!this.entryForm.valid) return;
 
     const formValue = this.entryForm.value;
 
+    const raw = String(formValue.amount).replace(',', '.');
+    const parsed = Number(raw);
+    if (Number.isNaN(parsed)) {
+      return;
+    }
+    const amount = Math.round((parsed + Number.EPSILON) * 100) / 100;
+
     if (formValue.mode === 'single') {
       const entry: NewBudgetEntry = {
         type: formValue.type as 'income' | 'expense',
         category: formValue.category!,
-        amount: Number(formValue.amount),
+        amount: amount,
         description: formValue.description || '',
         date: new Date(formValue.date!),
       };
@@ -115,7 +139,7 @@ export class Budgeting implements OnInit {
       const recurring: NewRecurringEntry = {
         type: formValue.type as 'income' | 'expense',
         category: formValue.category!,
-        amount: Number(formValue.amount),
+        amount: amount,
         description: formValue.description || '',
         frequency: formValue.frequency as 'kuukausittain' | 'viikoittain',
       };

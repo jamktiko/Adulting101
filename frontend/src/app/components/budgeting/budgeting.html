@@ -29,16 +29,16 @@
     <div class="progress-bar">
       <div class="progress" [style.width.%]="budgetPercentage()"></div>
     </div>
-    <p>{{ totalExpenses() }} € / {{ budgetLimit() }} €</p>
+    <p>{{ totalExpenses() | number: '1.2-2' }} € / {{ budgetLimit() | number: '1.2-2' }} €</p>
   </div>
 
   <!-- Yhteenveto -->
   <div class="summary item" style="background-color: #f8e85a; border: 2px solid #eab308">
     <h3>Yhteenveto</h3>
-    <div class="income"><strong>Tulot:</strong> {{ totalIncome() }} €</div>
-    <div class="expenses"><strong>Menot:</strong> {{ totalExpenses() }} €</div>
+    <div class="income"><strong>Tulot:</strong> {{ totalIncome() | number: '1.2-2' }} €</div>
+    <div class="expenses"><strong>Menot:</strong> {{ totalExpenses() | number: '1.2-2' }} €</div>
     <div class="balance" [class.negative]="balance() < 0">
-      <strong>Saldo:</strong> {{ balance() }} €
+      <strong>Saldo:</strong> {{ balance() | number: '1.2-2' }} €
     </div>
   </div>
 
@@ -49,9 +49,11 @@
       <div class="recurring-entry">
         <span>{{ entry.category }} ({{ entry.frequency }})</span>
         @if (entry.type === 'expense') {
-          <span style="margin: 0 1em 0 0.5em">-{{ entry.amount }} €</span>
+          <span style="margin: 0 1em 0 0.5em">-{{ entry.amount | number: '1.2-2' }} €</span>
         } @else {
-          <span style="margin: 0 1em 0 0.5em; color: green">{{ entry.amount }} €</span>
+          <span style="margin: 0 1em 0 0.5em; color: green"
+            >{{ entry.amount | number: '1.2-2' }} €</span
+          >
         }
         <button (click)="deleteRecurringEntry(entry._id)">Poista</button>
       </div>
@@ -60,9 +62,11 @@
       <div class="entry">
         <span>{{ entry.category }}</span>
         @if (entry.type === 'expense') {
-          <span style="margin: 0 1em 0 0.5em">-{{ entry.amount }} €</span>
+          <span style="margin: 0 1em 0 0.5em">-{{ entry.amount | number: '1.2-2' }} €</span>
         } @else {
-          <span style="margin: 0 1em 0 0.5em; color: green">{{ entry.amount }} €</span>
+          <span style="margin: 0 1em 0 0.5em; color: green"
+            >{{ entry.amount | number: '1.2-2' }} €</span
+          >
         }
         <button (click)="deleteEntry(entry._id)">Poista</button>
       </div>
@@ -115,7 +119,14 @@
       <!-- Summa -->
       <div class="form-group">
         <label for="amount">Summa (€):</label>
-        <input id="amount" type="number" formControlName="amount" placeholder="0.00" step="0.01" />
+        <input
+          id="amount"
+          type="number"
+          formControlName="amount"
+          placeholder="0.00"
+          step="0.01"
+          min="0.01"
+        />
         @if (entryForm.get('amount')?.hasError('required') && entryForm.get('amount')?.touched) {
           <span class="error">Summa vaaditaan</span>
         }
@@ -124,6 +135,9 @@
         }
         @if (entryForm.get('amount')?.hasError('max')) {
           <span class="error">Summa voi olla korkeintaan 999 999.99 €</span>
+        }
+        @if (entryForm.get('amount')?.hasError('tooManyDecimals')) {
+          <span class="error">Summassa voi olla korkeintaan kaksi desimaalia</span>
         }
       </div>
 
