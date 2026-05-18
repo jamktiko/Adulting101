@@ -6,7 +6,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { signUpUser, confirmUser, loginUser } = require('./utils/cognito');
-const authCheck = require('./middleware/authCheck');
 const {
   validateBudgetEntry,
   validateRecurringEntry,

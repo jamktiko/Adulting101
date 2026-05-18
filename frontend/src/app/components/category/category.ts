@@ -44,7 +44,6 @@ export class Category {
       this.dataService.getTopicData(categoryParam).subscribe({
         next: (data) => {
           this.topicData.set(data);
-          // console.log(data);
           this.loading.set(false);
         },
         error: () => this.loading.set(false),
