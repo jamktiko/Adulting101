@@ -66,14 +66,14 @@ _Kirjaa tähän lukuun aikataulu. Millä tavoin projekti viedään läpi. Voitte
 | Tuotanto | 07.05.2026 | Ongelmanratkaisua |
 | Tuotanto | 08.05.2026 | Ongelmanratkaisua |
 
-| Viimeistely | 11.05.2026 | ..................................................... |
-| Viimeistely | 12.05.2026 | ..................................................... |
-| Viimeistely | 13.05.2026 | ..................................................... |
+| Viimeistely | 11.05.2026 | Sovelluksen testaus ja kirjautumisen korjausta |
+| Viimeistely | 12.05.2026 | Budjettinäkymän pystytys |
+| Viimeistely | 13.05.2026 | Dokumentointia, testausta |
 | Helatorstai | 14.05.2026 | Vapaapäivä! |
-| Viimeistely | 15.05.2026 | ..................................................... |
+| Viimeistely | 15.05.2026 | Markkinointivideon suunnittelu, testaus |
 
-| Viimeistely | 18.05.2026 | ..................................................... |
-| Viimeistely | 19.05.2026 | ..................................................... |
+| Viimeistely | 18.05.2026 | Dokumentointi, markkinointivideo |
+| Viimeistely | 19.05.2026 | Dokumentointi, markkinointivideon viimeistely ja viime hetken korjaukset |
 | Projekti päättyy | 20.05.2026 | Ohjelmistoprojekti 2 päättyy |
 
 ## Raportointi, kommunikointi ja dokumentointi
@@ -113,3 +113,4 @@ Esimerkiksi näin.
 | Työntekijät eivät ole motivoituneita ja eivät saavu paikalle | Pieni          | Suuri   | Pidetään työpaikalla kahvia ja pullaa. |
 | Aarne tulee krapulassa kouluun                               | Suuri          | Pieni   | Aarne lopettaa alkoholinkäytön.        |
 | Tiimissä ei ole UI/UX-designeria                             | Suuri          | Suuri   | Opetellaan UI/UX-design esim AI:lla    |
+| Tiimissä ei ole paljoa kokemusta testauksesta                | Suuri          | Suuri   | Opetellaan yhdessä                     |
